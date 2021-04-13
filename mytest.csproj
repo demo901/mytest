@@ -33,51 +33,65 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DigitalPlatform">
-      <HintPath>..\DigitalPlatform\4.0\bin\Debug\DigitalPlatform.dll</HintPath>
+    <Reference Include="DigitalPlatform, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.dll</HintPath>
     </Reference>
-    <Reference Include="DigitalPlatform.CirculationClient">
-      <HintPath>..\dp2Catalog\bin\Debug\DigitalPlatform.CirculationClient.dll</HintPath>
+    <Reference Include="DigitalPlatform.CirculationClient, Version=3.0.7771.33068, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.CirculationClient.dll</HintPath>
     </Reference>
-    <Reference Include="DigitalPlatform.CommonControl">
-      <HintPath>..\DigitalPlatform.CommonControl\bin\Debug\DigitalPlatform.CommonControl.dll</HintPath>
+    <Reference Include="DigitalPlatform.CommonControl, Version=3.0.7771.33063, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.CommonControl.dll</HintPath>
     </Reference>
-    <Reference Include="DigitalPlatform.Core">
-      <HintPath>..\dp-library\DigitalPlatform.Core\bin\Debug\netstandard2.0\DigitalPlatform.Core.dll</HintPath>
+    <Reference Include="DigitalPlatform.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.Core.dll</HintPath>
     </Reference>
-    <Reference Include="DigitalPlatform.LibraryClient">
-      <HintPath>..\dp2Catalog\bin\Debug\DigitalPlatform.LibraryClient.dll</HintPath>
+    <Reference Include="DigitalPlatform.Drawing, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.Drawing.dll</HintPath>
     </Reference>
-    <Reference Include="DigitalPlatform.MarcDom">
-      <HintPath>..\dp2Catalog\bin\Debug\DigitalPlatform.MarcDom.dll</HintPath>
+    <Reference Include="DigitalPlatform.LibraryClient, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.LibraryClient.dll</HintPath>
+    </Reference>
+    <Reference Include="DigitalPlatform.MarcDom, Version=3.0.7771.33066, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.MarcDom.dll</HintPath>
     </Reference>
     <Reference Include="DigitalPlatform.MarcEditor, Version=3.0.7771.33066, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\DigitalPlatform.MarcEditor\bin\Debug\DigitalPlatform.MarcEditor.dll</HintPath>
+      <HintPath>..\mytestdll\DigitalPlatform.MarcEditor.dll</HintPath>
     </Reference>
-    <Reference Include="DigitalPlatform.MarcFixedFieldControl">
-      <HintPath>..\DigitalPlatform.MarcFixedFieldControl\bin\Debug\DigitalPlatform.MarcFixedFieldControl.dll</HintPath>
+    <Reference Include="DigitalPlatform.MarcFixedFieldControl, Version=3.0.7771.33064, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.MarcFixedFieldControl.dll</HintPath>
     </Reference>
-    <Reference Include="DigitalPlatform.MarcKernel">
-      <HintPath>..\DigitalPlatform.MarcKernel\bin\Debug\DigitalPlatform.MarcKernel.dll</HintPath>
+    <Reference Include="DigitalPlatform.MarcKernel, Version=3.0.7771.33062, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.MarcKernel.dll</HintPath>
     </Reference>
-    <Reference Include="DigitalPlatform.MarcQuery">
-      <HintPath>..\dp-library\DigitalPlatform.MarcQuery\bin\Debug\netstandard2.0\DigitalPlatform.MarcQuery.dll</HintPath>
+    <Reference Include="DigitalPlatform.MarcQuery, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.MarcQuery.dll</HintPath>
     </Reference>
     <Reference Include="DigitalPlatform.Net, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\chord\dp-library\DigitalPlatform.Net\bin\Debug\netstandard2.0\DigitalPlatform.Net.dll</HintPath>
+      <HintPath>..\mytestdll\DigitalPlatform.Net.dll</HintPath>
     </Reference>
-    <Reference Include="DigitalPlatform.Xml">
-      <HintPath>..\DigitalPlatform.Xml\bin\Debug\DigitalPlatform.Xml.dll</HintPath>
+    <Reference Include="DigitalPlatform.Xml, Version=3.0.7771.33061, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\mytestdll\DigitalPlatform.Xml.dll</HintPath>
     </Reference>
     <Reference Include="DigitalPlatform.Z3950, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\chord\dp-library\DigitalPlatform.Z3950\bin\Debug\netstandard2.0\DigitalPlatform.Z3950.dll</HintPath>
+      <HintPath>..\mytestdll\DigitalPlatform.Z3950.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\mytestdll\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">

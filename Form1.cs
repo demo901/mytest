@@ -31,6 +31,7 @@ namespace mytest
         long _resultCount = 0;   // 检索命中条数
         int _fetched = 0;   // 已经 Present 获取的条数
         string[] z39_records_marc;
+        string marcType = "unimarc";
 
         public Form1()
         {
@@ -133,7 +134,6 @@ namespace mytest
             ofd.CheckPathExists = true;//验证路径的有效性
             if (ofd.ShowDialog() == DialogResult.OK) //用户点击确认按钮，发送确认消息
             {
-                //textBox1.Text = File.ReadAllText(ofd.FileName);//获取在文件对话框中选定的路径或者字符串
                 m2f.json_record.rawRecordContent = File.ReadAllText(ofd.FileName);
                 m2f.marc2dc();
                 marcEditor1.Marc = m2f.dcmarcText;
@@ -143,24 +143,29 @@ namespace mytest
         private void marcEditor1_GetConfigDom(object sender, DigitalPlatform.Marc.GetConfigDomEventArgs e)
         {
             // e.Path 中可能是 "marcdef" 或 "marcvaluelist"
-            
-            //string filename = e.Path;
-            //int pos = filename.IndexOf("marcvaluelist");
-            //if(pos == -1)
-            //{
-            //    filename = "1_2_840_10003_5_10\\marcdef";
-            //}
-            //else
-            //{
-            //    filename = "1_2_840_10003_5_1\\marcvaluelist";
-            //}
-            
-            //filename = Path.Combine(Environment.CurrentDirectory, filename);
+            string filename = "";
 
-            //XmlDocument dom = new XmlDocument();
-            //dom.Load(filename);
+            if (e.Path.IndexOf("marcvaluelist") == -1)
+            {
+                filename = "1_2_840_10003_5_10\\marcdef";
+                if (marcType.Equals("unimarc"))
+                {
+                    filename = "1_2_840_10003_5_1\\marcdef";
+                }
+            }
+            else
+            {
+                filename = "1_2_840_10003_5_10\\marcvaluelist";
+                if (marcType.Equals("unimarc"))
+                {
+                    filename = "1_2_840_10003_5_1\\marcvaluelist";
+                }
+            }
+            filename = Path.Combine(Environment.CurrentDirectory, filename);
+            XmlDocument dom = new XmlDocument();
+            dom.Load(filename);
 
-            //e.XmlDocument = dom;
+            e.XmlDocument = dom;
         }
 
         private void btn_fetch_record_Click(object sender, EventArgs e)
@@ -176,7 +181,6 @@ namespace mytest
             string marc_str = m2f.dc2marc(marcEditor1.Marc);
             string json_str = m2f.marc2json(marc_str);
 
-            //textBox1.Text = m2f.data_post(json_str);
             m2f.data_post(json_str);
         }
 
@@ -452,26 +456,38 @@ namespace mytest
                 z39_records_marc[i] = strMARC;//临时保存
 
                 MarcRecord marc_record = new MarcRecord(strMARC);
-                var content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
+                string content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
+                marcType = "unimarc";
+                string isbn = "";
+                string year = "";
+                string author = "";
+                string publish = "";
                 if (content == null)
                 {
                     content = marc_record.select("field[@name='245']/subfield[@name='a']").FirstContent;
+                    marcType = "usmarc";
+                    isbn = marc_record.select("field[@name='020']/subfield[@name='a']").FirstContent;
+                    year = marc_record.select("field[@name='260']/subfield[@name='c']").FirstContent;
+                    author = marc_record.select("field[@name='245']/subfield[@name='c']").FirstContent;
+                    publish = marc_record.select("field[@name='260']/subfield[@name='b']").FirstContent;
+                }
+                else
+                {
+                    isbn = marc_record.select("field[@name='010']/subfield[@name='a']").FirstContent;
+                    year = marc_record.select("field[@name='210']/subfield[@name='d']").FirstContent;
+                    author = marc_record.select("field[@name='200']/subfield[@name='f']").FirstContent;
+                    publish = marc_record.select("field[@name='210']/subfield[@name='c']").FirstContent;
                 }
                 
                 ListViewItem lvi = new ListViewItem();
                 lvi.Text = i.ToString();
-                lvi.SubItems.Add("isbn");
-                lvi.SubItems.Add("year");
+                lvi.SubItems.Add(isbn);
+                lvi.SubItems.Add(year);
                 lvi.SubItems.Add(content);
-                lvi.SubItems.Add("author");
-                lvi.SubItems.Add("publish");
+                lvi.SubItems.Add(author);
+                lvi.SubItems.Add(publish);
                 listView1.Items.Add(lvi);
 
-                //if (i == 0)
-                //{
-                    //MessageBox.Show(record.m_strSyntaxOID);
-                    //marcEditor1.Marc = strMARC;
-                //}
                 i++;
             }
             this.listView1.EndUpdate();            
@@ -484,28 +500,7 @@ namespace mytest
                 return; //没选中，不做响应
 
             string rec_id = listView1.SelectedItems[0].Text;
-
-            string filename = Path.Combine(Environment.CurrentDirectory, "marcvaluelist");
-            //XmlDocument dom = new XmlDocument();
-            //dom.Load(filename);
-
-            //marcEditor1.MarcDefDom.LoadXml(ConvertXmlToString(dom));
-            marcEditor1.MarcDefDom = null;
-            marcEditor1.MarcDefDom.Load(filename);
             marcEditor1.Marc = z39_records_marc[Convert.ToInt32(rec_id)];
-        }
-        private string ConvertXmlToString(XmlDocument xmlDoc)
-        {
-            MemoryStream stream = new MemoryStream();
-            XmlTextWriter writer = new XmlTextWriter(stream, null);
-            writer.Formatting = Formatting.Indented;
-            xmlDoc.Save(writer);
-            StreamReader sr = new StreamReader(stream, System.Text.Encoding.UTF8);
-            stream.Position = 0;
-            string xmlString = sr.ReadToEnd();
-            sr.Close();
-            stream.Close();
-            return xmlString;
         }
     }
 }
