@@ -306,6 +306,7 @@ namespace mytest
             int rec_id = Convert.ToInt32(listView1.SelectedItems[0].Text);
 
             //加载数据到编辑器
+            Z39_Record.Rec_Status = true;
             Z39_Record.Rec_Data = z39_record_data[rec_id];
             Z39_Record.Rec_Type = z39_record_type[rec_id];
 

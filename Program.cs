@@ -67,4 +67,15 @@ namespace mytest
         public static string Rec_Data;
         public static bool Rec_Status;
     }
+    public class Folio_info
+    {
+        public static string Folio_uname;
+        public static string Folio_upass;
+        public static string Folio_tenant;
+        public static string Folio_token;
+        public static string Folio_token_url;
+        public static string Folio_data_url;
+        public static string Folio_catalog_url;
+        public static string Folio_image_url;
+    }
 }

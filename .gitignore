@@ -9,7 +9,6 @@
 *.user
 *.userosscache
 *.sln.docstates
-folio.config
 *.dll
 
 # User-specific files (MonoDevelop/Xamarin Studio)

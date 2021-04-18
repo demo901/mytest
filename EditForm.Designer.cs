@@ -38,10 +38,11 @@ namespace mytest
             this.btn_200f_2_7xx = new System.Windows.Forms.Button();
             this.btn_200g_2_702 = new System.Windows.Forms.Button();
             this.listView2 = new System.Windows.Forms.ListView();
-            this.listView3 = new System.Windows.Forms.ListView();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.btn_catalog_waiting = new System.Windows.Forms.Button();
+            this.btn_catalog_ing = new System.Windows.Forms.Button();
             this.btn_search = new System.Windows.Forms.Button();
+            this.btn_check_failer = new System.Windows.Forms.Button();
+            this.webBrowser1 = new System.Windows.Forms.WebBrowser();
             this.SuspendLayout();
             // 
             // marcEditor1
@@ -61,6 +62,7 @@ namespace mytest
             this.marcEditor1.IndicatorTextColor = System.Drawing.Color.Green;
             this.marcEditor1.Lang = "zh";
             this.marcEditor1.Location = new System.Drawing.Point(12, 83);
+            this.marcEditor1.Marc = "";
             this.marcEditor1.MarcDefDom = null;
             this.marcEditor1.Name = "marcEditor1";
             this.marcEditor1.NameBackColor = System.Drawing.SystemColors.Window;
@@ -153,42 +155,32 @@ namespace mytest
             this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
             this.listView2.HideSelection = false;
-            this.listView2.Location = new System.Drawing.Point(836, 6);
+            this.listView2.Location = new System.Drawing.Point(725, 83);
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(587, 306);
+            this.listView2.Size = new System.Drawing.Size(611, 243);
             this.listView2.TabIndex = 41;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
+            this.listView2.Click += new System.EventHandler(this.listView2_Click);
             // 
-            // listView3
+            // btn_catalog_waiting
             // 
-            this.listView3.FullRowSelect = true;
-            this.listView3.GridLines = true;
-            this.listView3.HideSelection = false;
-            this.listView3.Location = new System.Drawing.Point(836, 370);
-            this.listView3.Name = "listView3";
-            this.listView3.Size = new System.Drawing.Size(586, 297);
-            this.listView3.TabIndex = 42;
-            this.listView3.UseCompatibleStateImageBehavior = false;
-            this.listView3.View = System.Windows.Forms.View.Details;
+            this.btn_catalog_waiting.Location = new System.Drawing.Point(736, 41);
+            this.btn_catalog_waiting.Name = "btn_catalog_waiting";
+            this.btn_catalog_waiting.Size = new System.Drawing.Size(127, 28);
+            this.btn_catalog_waiting.TabIndex = 43;
+            this.btn_catalog_waiting.Text = "待编目列表";
+            this.btn_catalog_waiting.UseVisualStyleBackColor = true;
+            this.btn_catalog_waiting.Click += new System.EventHandler(this.btn_catalog_waiting_Click);
             // 
-            // button2
+            // btn_catalog_ing
             // 
-            this.button2.Location = new System.Drawing.Point(1055, 325);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(127, 39);
-            this.button2.TabIndex = 43;
-            this.button2.Text = "刷新抢单列表";
-            this.button2.UseVisualStyleBackColor = true;
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(1235, 325);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(124, 38);
-            this.button3.TabIndex = 44;
-            this.button3.Text = "刷新派单列表";
-            this.button3.UseVisualStyleBackColor = true;
+            this.btn_catalog_ing.Location = new System.Drawing.Point(884, 41);
+            this.btn_catalog_ing.Name = "btn_catalog_ing";
+            this.btn_catalog_ing.Size = new System.Drawing.Size(124, 28);
+            this.btn_catalog_ing.TabIndex = 44;
+            this.btn_catalog_ing.Text = "编目中列表";
+            this.btn_catalog_ing.UseVisualStyleBackColor = true;
             // 
             // btn_search
             // 
@@ -200,15 +192,33 @@ namespace mytest
             this.btn_search.UseVisualStyleBackColor = true;
             this.btn_search.Click += new System.EventHandler(this.btn_search_Click);
             // 
+            // btn_check_failer
+            // 
+            this.btn_check_failer.Location = new System.Drawing.Point(1030, 41);
+            this.btn_check_failer.Name = "btn_check_failer";
+            this.btn_check_failer.Size = new System.Drawing.Size(124, 28);
+            this.btn_check_failer.TabIndex = 46;
+            this.btn_check_failer.Text = "审核未通过列表";
+            this.btn_check_failer.UseVisualStyleBackColor = true;
+            // 
+            // webBrowser1
+            // 
+            this.webBrowser1.Location = new System.Drawing.Point(725, 332);
+            this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
+            this.webBrowser1.Name = "webBrowser1";
+            this.webBrowser1.Size = new System.Drawing.Size(610, 354);
+            this.webBrowser1.TabIndex = 49;
+            // 
             // EditForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1435, 698);
+            this.ClientSize = new System.Drawing.Size(1347, 698);
+            this.Controls.Add(this.webBrowser1);
+            this.Controls.Add(this.btn_check_failer);
             this.Controls.Add(this.btn_search);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.listView3);
+            this.Controls.Add(this.btn_catalog_ing);
+            this.Controls.Add(this.btn_catalog_waiting);
             this.Controls.Add(this.listView2);
             this.Controls.Add(this.btn_200g_2_702);
             this.Controls.Add(this.btn_200f_2_7xx);
@@ -239,10 +249,11 @@ namespace mytest
         private System.Windows.Forms.Button btn_200f_2_7xx;
         private System.Windows.Forms.Button btn_200g_2_702;
         private System.Windows.Forms.ListView listView2;
-        private System.Windows.Forms.ListView listView3;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button btn_catalog_waiting;
+        private System.Windows.Forms.Button btn_catalog_ing;
         private System.Windows.Forms.Button btn_search;
+        private System.Windows.Forms.Button btn_check_failer;
+        private System.Windows.Forms.WebBrowser webBrowser1;
     }
 }
 

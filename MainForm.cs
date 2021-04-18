@@ -45,5 +45,11 @@ namespace mytest
             sf.MdiParent = this;
             sf.Show();
         }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            //MessageBox.Show("正在关闭程序");
+            Environment.Exit(0);
+        }
     }
 }

@@ -35,6 +35,7 @@ namespace mytest
             this.fileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.menu_open_MarcEdit_form = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.menu_open_SearchForm = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -62,7 +63,6 @@ namespace mytest
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.menu_open_SearchForm = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
@@ -96,24 +96,31 @@ namespace mytest
             // menu_open_MarcEdit_form
             // 
             this.menu_open_MarcEdit_form.Name = "menu_open_MarcEdit_form";
-            this.menu_open_MarcEdit_form.Size = new System.Drawing.Size(180, 22);
+            this.menu_open_MarcEdit_form.Size = new System.Drawing.Size(169, 22);
             this.menu_open_MarcEdit_form.Text = "打开编辑器窗口";
             this.menu_open_MarcEdit_form.Click += new System.EventHandler(this.menu_open_MarcEdit_form_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(166, 6);
+            // 
+            // menu_open_SearchForm
+            // 
+            this.menu_open_SearchForm.Name = "menu_open_SearchForm";
+            this.menu_open_SearchForm.Size = new System.Drawing.Size(169, 22);
+            this.menu_open_SearchForm.Text = "打开Z39搜索窗口";
+            this.menu_open_SearchForm.Click += new System.EventHandler(this.menu_open_SearchForm_Click);
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(166, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
             this.exitToolStripMenuItem.Text = "退出(&X)";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolsStripMenuItem_Click);
             // 
@@ -305,13 +312,6 @@ namespace mytest
             this.toolStripStatusLabel.Size = new System.Drawing.Size(32, 17);
             this.toolStripStatusLabel.Text = "状态";
             // 
-            // menu_open_SearchForm
-            // 
-            this.menu_open_SearchForm.Name = "menu_open_SearchForm";
-            this.menu_open_SearchForm.Size = new System.Drawing.Size(180, 22);
-            this.menu_open_SearchForm.Text = "打开Z39搜索窗口";
-            this.menu_open_SearchForm.Click += new System.EventHandler(this.menu_open_SearchForm_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -324,6 +324,7 @@ namespace mytest
             this.MainMenuStrip = this.menuStrip;
             this.Name = "MainForm";
             this.Text = "MainForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();

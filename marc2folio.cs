@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-
 
 using System.Net;
 using System.IO;
@@ -51,6 +47,8 @@ namespace mytest
 
 		public string url_token { get; set; }
 		public string url_record { get; set; }
+		public string url_record_catalog { get; set; }
+		public string url_record_image { get; set; }
 		public string cur_Tenant { get; set; }
 		public string cur_Token { get; set; }
 		public string user_name { get; set; }
@@ -61,18 +59,21 @@ namespace mytest
 		public json_Record json_record = new json_Record();
 
 
-		public marc2folio(string uname, string upass, string tenant, string url_token, string url_record)
+		public marc2folio(string uname, string upass, string tenant, string token, string url,
+			string url_catalog,string url_image)
 		{
 			curEncoding = "UTF-8";
 			SUB_FIELD_SPLIT_CHAR = (char)0x1f;
 			req_UserAgent = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2; .NET CLR 1.1.4322; .NET CLR 2.0.50727)";
 			req_Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
 
-			this.user_name = uname;
-			this.user_pass = upass;
-			this.cur_Tenant = tenant;
-			this.url_token = url_token;
-			this.url_record = url_record;
+			user_name = uname;
+			user_pass = upass;
+			cur_Tenant = tenant;
+			url_token = token;
+			url_record = url;
+			url_record_catalog = url_catalog;
+			url_record_image = url_image;
 		}
 
 		public void json_data_process()
@@ -101,10 +102,6 @@ namespace mytest
 			try
 			{
 				json_record.additionalInfo = jo["additionalInfo"].ToString();
-            }
-            catch ( Exception e1) { e1.ToString(); }
-			try
-			{
 				json_record.metadata = jo["metadata"].ToString();
 			}catch(Exception e1) { e1.ToString(); }
 
@@ -414,19 +411,69 @@ namespace mytest
 			newStream.Close();
 
 			//获取网页响应结果
-			var response = (HttpWebResponse)request.GetResponse();
-			for (int i = 0; i < response.Headers.Keys.Count; i++)
+			cur_Token = "";
+			try
 			{
-				if (response.Headers.Keys[i].Trim().Equals("x-okapi-token"))
+				var response = (HttpWebResponse)request.GetResponse();
+				for (int i = 0; i < response.Headers.Keys.Count; i++)
 				{
-					this.cur_Token = response.Headers.Get(i);
-					break;
+					if (response.Headers.Keys[i].Trim().Equals("x-okapi-token"))
+					{
+						cur_Token = response.Headers.Get(i);
+						break;
+					}
 				}
 			}
+			catch(Exception ex)
+            {
+				ex.ToString();
+				cur_Token = "";
+            }
 		}
 		bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
 		{
 			return true; //总是接受  
+		}
+
+		public string catalog_fetch(string status,int pagenum,int pagesize)
+		{
+			HttpWebRequest request = null;
+			string url = url_record_catalog + "?status=" + status + "&pageNum=" + pagenum + "&pageSize=" + pagesize;
+			if (url_record_catalog.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+			{
+				request = WebRequest.Create(url_record_catalog) as HttpWebRequest;
+				ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
+				request.ProtocolVersion = HttpVersion.Version11;         // 这里设置了协议类型。
+				ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;// SecurityProtocolType.Tls1.2; 
+				ServicePointManager.CheckCertificateRevocationList = true;
+				ServicePointManager.DefaultConnectionLimit = 100;
+				ServicePointManager.Expect100Continue = false;
+			}
+			else
+			{
+				request = (HttpWebRequest)WebRequest.Create(url_record_catalog);
+			}
+
+			request.Method = "GET";
+			request.UserAgent = req_UserAgent;
+			request.Accept = req_Accept;
+			request.KeepAlive = true;
+			request.ContentType = "application/json";
+			request.Headers["x-okapi-tenant"] = cur_Tenant;
+			request.Headers["x-okapi-token"] = cur_Token;
+
+			var response = (HttpWebResponse)request.GetResponse();  //获取响应，即发送请求
+			Stream responseStream = response.GetResponseStream();
+			var streamReader = new StreamReader(responseStream, Encoding.UTF8);
+			string res = streamReader.ReadToEnd();
+
+			streamReader.Close();
+			if (response != null)
+				response.Close();
+			if (request != null)
+				request.Abort();
+
+			return res;
 		}
 	}
 }
