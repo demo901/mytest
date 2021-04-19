@@ -202,8 +202,9 @@ namespace mytest
 
         private void btn_catalog_waiting_Click(object sender, EventArgs e)
         {
-            string jsonText = "";//m2f.catalog_fetch("PENDING_CATALOG", 1, 10);
-            jsonText = "{\"code\":200,\"message\":\"SUCCESS\",\"data\":{\"pageNum\":1,\"pageSize\":10,\"pages\":1,\"total\":1,\"content\":[{\"id\":\"7d2a8497-2d29-42fa-a25b-1f8cd68c1cd2\",\"name\":\"C16841\",\"title\":\"中国史\",\"cip\":\"2019010108\",\"publisher\":\"云南人民出版社\",\"status\":\"PENDING_CATALOG\",\"endTaskTime\":\"2021-04-19 13:25:52\",\"cataUserId\":\"刘梦洁1\",\"orgId\":\"北京总馆1\",\"isbn\":\"9787222180093\",\"instanceId\":\"e0c31bf3-a2da-4f34-9918-853e002abd35\"},{\"id\":\"7d2a8497-2d29-42fa-a25b-1f8cd68c1cd3\",\"name\":\"C16842\",\"title\":\"中国史2\",\"cip\":\"2019010109\",\"publisher\":\"云南人民出版社2\",\"status\":\"PENDING_CATALOG\",\"endTaskTime\":\"2021-04-20 13:25:52\",\"cataUserId\":\"刘梦洁2\",\"orgId\":\"北京总馆2\",\"isbn\":\"9787222180094\",\"instanceId\":\"e0c31bf3-a2da-4f34-9918-853e002abd36\"}]},\"success\":true}";
+            string jsonText = "";
+            jsonText = m2f.catalog_fetch("PENDING_CATALOG", 1, 10);
+            //jsonText = "{\"code\":200,\"message\":\"SUCCESS\",\"data\":{\"pageNum\":1,\"pageSize\":10,\"pages\":1,\"total\":1,\"content\":[{\"id\":\"7d2a8497-2d29-42fa-a25b-1f8cd68c1cd2\",\"name\":\"C16841\",\"title\":\"中国史\",\"cip\":\"2019010108\",\"publisher\":\"云南人民出版社\",\"status\":\"PENDING_CATALOG\",\"endTaskTime\":\"2021-04-19 13:25:52\",\"cataUserId\":\"刘梦洁1\",\"orgId\":\"北京总馆1\",\"isbn\":\"9787222180093\",\"instanceId\":\"e0c31bf3-a2da-4f34-9918-853e002abd35\"},{\"id\":\"7d2a8497-2d29-42fa-a25b-1f8cd68c1cd3\",\"name\":\"C16842\",\"title\":\"中国史2\",\"cip\":\"2019010109\",\"publisher\":\"云南人民出版社2\",\"status\":\"PENDING_CATALOG\",\"endTaskTime\":\"2021-04-20 13:25:52\",\"cataUserId\":\"刘梦洁2\",\"orgId\":\"北京总馆2\",\"isbn\":\"9787222180094\",\"instanceId\":\"e0c31bf3-a2da-4f34-9918-853e002abd36\"}]},\"success\":true}";
 
             JObject jo = (JObject)JsonConvert.DeserializeObject(jsonText);
 
@@ -216,12 +217,14 @@ namespace mytest
                 MessageBox.Show("获取数据失败");
                 return;
             }
-
+            /* 这里返回格式变了，暂时注释掉
             var page_Num = jo["data"]["pageNum"];
             var page_Size = jo["data"]["pageSize"];
             var pages = jo["data"]["pages"];
             var total = jo["data"]["total"];
             var content = jo["data"]["content"];
+            */
+            var content = jo["data"];
 
             listView2.Clear();
             this.listView2.Columns.Add("序号",50);
@@ -257,8 +260,26 @@ namespace mytest
                 return; //没选中，不做响应
 
             int rec_id = Convert.ToInt32(listView2.SelectedItems[0].Text) - 1;
-            //MessageBox.Show(rec_id.ToString() + "->" + pending_catalog_array[rec_id]);
-            string jsonText = "{\"code\":200,\"message\":\"SUCCESS\",\"data\":[{\"id\":\"6b331104-6922-4faa-abff-b4111273d83d\",\"imageName\":\"C16841_A01.jpg\",\"imageCaption\":\"COVER\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGEVrmcAAAAAFKylDQ936.jpg?token=2c2171a98e62a7c52c8d7e9582c47131&ts=1618756785\"},{\"id\":\"a9cce472-fba3-4889-878d-4f1c54285e7b\",\"imageName\":\"C16841_A02.jpg\",\"imageCaption\":\"COVER\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGECWwYAAAAAN4NTwY510.jpg?token=8da5a157e857148f424950ed8c59f3a5&ts=1618756785\"},{\"id\":\"7e624627-d6d5-49d4-8827-eefaad9f7903\",\"imageName\":\"C16841_B01.jpg\",\"imageCaption\":\"SPINE\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGEaidcAAAAALd276o323.jpg?token=b840e913b5d7363e13ba2ab0de7d28a4&ts=1618756785\"},{\"id\":\"857f0e6c-971e-42d3-9816-9750f3e8b00b\",\"imageName\":\"C16841_C01.jpg\",\"imageCaption\":\"FRONT_PAGE\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGEee9rAAAAABHW06A394.jpg?token=4e927af0d6925498afaeb0bdc8b861d4&ts=1618756785\"}],\"success\":true}";
+            
+            //加载记录到编辑器
+            m2f.data_fetch(m2f.image_fetch(pending_catalog_array[rec_id]));
+            m2f.json_data_process();
+            m2f.marc2dc();
+
+            Z39_Record.Rec_Type = "unimarc";
+            MarcRecord marc_record = new MarcRecord(m2f.dcmarcText);
+            string content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
+            if (content == null)
+            {
+                Z39_Record.Rec_Type = "usmarc";
+            }
+            marcEditor1.MarcDefDom = null;
+            marcEditor1.Marc = m2f.dcmarcText;
+            Z39_Record.Rec_Status = false;
+
+            //加载图片
+            string jsonText = "";// "{\"code\":200,\"message\":\"SUCCESS\",\"data\":[{\"id\":\"6b331104-6922-4faa-abff-b4111273d83d\",\"imageName\":\"C16841_A01.jpg\",\"imageCaption\":\"COVER\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGEVrmcAAAAAFKylDQ936.jpg?token=2c2171a98e62a7c52c8d7e9582c47131&ts=1618756785\"},{\"id\":\"a9cce472-fba3-4889-878d-4f1c54285e7b\",\"imageName\":\"C16841_A02.jpg\",\"imageCaption\":\"COVER\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGECWwYAAAAAN4NTwY510.jpg?token=8da5a157e857148f424950ed8c59f3a5&ts=1618756785\"},{\"id\":\"7e624627-d6d5-49d4-8827-eefaad9f7903\",\"imageName\":\"C16841_B01.jpg\",\"imageCaption\":\"SPINE\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGEaidcAAAAALd276o323.jpg?token=b840e913b5d7363e13ba2ab0de7d28a4&ts=1618756785\"},{\"id\":\"857f0e6c-971e-42d3-9816-9750f3e8b00b\",\"imageName\":\"C16841_C01.jpg\",\"imageCaption\":\"FRONT_PAGE\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGEee9rAAAAABHW06A394.jpg?token=4e927af0d6925498afaeb0bdc8b861d4&ts=1618756785\"}],\"success\":true}";
+            jsonText = m2f.image_fetch(pending_catalog_array[rec_id]);
             JObject jo = (JObject)JsonConvert.DeserializeObject(jsonText);
 
             string res_code = jo["code"].ToString();

@@ -441,7 +441,7 @@ namespace mytest
 			string url = url_record_catalog + "?status=" + status + "&pageNum=" + pagenum + "&pageSize=" + pagesize;
 			if (url_record_catalog.StartsWith("https", StringComparison.OrdinalIgnoreCase))
 			{
-				request = WebRequest.Create(url_record_catalog) as HttpWebRequest;
+				request = WebRequest.Create(url) as HttpWebRequest;
 				ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
 				request.ProtocolVersion = HttpVersion.Version11;         // 这里设置了协议类型。
 				ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;// SecurityProtocolType.Tls1.2; 
@@ -451,7 +451,47 @@ namespace mytest
 			}
 			else
 			{
-				request = (HttpWebRequest)WebRequest.Create(url_record_catalog);
+				request = (HttpWebRequest)WebRequest.Create(url);
+			}
+
+			request.Method = "GET";
+			request.UserAgent = req_UserAgent;
+			request.Accept = req_Accept;
+			request.KeepAlive = true;
+			//request.ContentType = "application/json";
+			request.Headers["x-okapi-tenant"] = cur_Tenant;
+			request.Headers["x-okapi-token"] = cur_Token;
+
+			var response = (HttpWebResponse)request.GetResponse();  //获取响应，即发送请求
+			Stream responseStream = response.GetResponseStream();
+			var streamReader = new StreamReader(responseStream, Encoding.UTF8);
+			string res = streamReader.ReadToEnd();
+
+			streamReader.Close();
+			if (response != null)
+				response.Close();
+			if (request != null)
+				request.Abort();
+
+			return res;
+		}
+		public string image_fetch(string instanceID)
+		{
+			HttpWebRequest request = null;
+			string url = url_record_image + "?instanceId=" + instanceID;
+			if (url_record_image.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+			{
+				request = WebRequest.Create(url) as HttpWebRequest;
+				ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
+				request.ProtocolVersion = HttpVersion.Version11;         // 这里设置了协议类型。
+				ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;// SecurityProtocolType.Tls1.2; 
+				ServicePointManager.CheckCertificateRevocationList = true;
+				ServicePointManager.DefaultConnectionLimit = 100;
+				ServicePointManager.Expect100Continue = false;
+			}
+			else
+			{
+				request = (HttpWebRequest)WebRequest.Create(url);
 			}
 
 			request.Method = "GET";

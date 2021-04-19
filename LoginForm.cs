@@ -86,12 +86,10 @@ namespace mytest
                         Folio_info.Folio_token_url = val;
                     if (key.Equals("FOLIO_DATA_URL"))
                         Folio_info.Folio_data_url = val;
-                    if (key.Equals("FOLIO_DATA_URL"))
+                    if (key.Equals("FOLIO_CATALOG_URL"))
                         Folio_info.Folio_catalog_url = val;
                     if (key.Equals("FOLIO_IMAGE_URL"))
                         Folio_info.Folio_image_url = val;
-                    if (key.Equals("FOLIO_TENANT_CATALOG"))
-                        Folio_info.Folio_catalog_url = val;
                 }
             }
             return true;
