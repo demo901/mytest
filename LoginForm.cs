@@ -20,7 +20,7 @@ namespace mytest
         {
             if(Folio_Config_Read() == false)
             {
-                MessageBox.Show("未找到配置文件 folio.config ");
+                MessageBox.Show("未找到配置文件 folio.config，确认配置正确后再重新运行程序。");
                 return;
             }
             Folio_info.Folio_uname = txt_username.Text.Trim();

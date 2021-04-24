@@ -48,13 +48,28 @@ namespace mytest
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //MessageBox.Show("正在关闭程序");
-            Environment.Exit(0);
+            try
+            {
+                if (MessageBox.Show("是否关闭程序?", "Confirm Message", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                    Environment.Exit(0);
+            }
+            catch(Exception ex)
+            {
+                ex.ToString();
+            }
         }
 
         private void menu_open_task_form_Click(object sender, EventArgs e)
         {
+            var tf = Program.TaskForm;
+            if (tf.Visible == true)
+            {
+                tf.Activate();
+                return;
+            }
 
+            tf.MdiParent = this;
+            tf.Show();
         }
     }
 }

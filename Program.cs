@@ -1,13 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
-using DigitalPlatform;
-using DigitalPlatform.Core;
-using DigitalPlatform.LibraryClient;
-using DigitalPlatform.Text;
 
 namespace mytest
 {
@@ -16,7 +8,15 @@ namespace mytest
         static MainForm _mainForm = null;
         static SearchForm _searchForm = null;
         static EditForm _editForm = null;
+        static TaskForm _taskForm = null;
 
+        public static TaskForm TaskForm
+        {
+            get
+            {
+                return _taskForm;
+            }
+        }
         public static EditForm EditForm
         {
             get
@@ -55,6 +55,7 @@ namespace mytest
                 _searchForm = new SearchForm();
                 _mainForm = new MainForm();
                 _editForm = new EditForm();
+                _taskForm = new TaskForm();
 
                 Application.Run(_mainForm);
             }
@@ -79,5 +80,14 @@ namespace mytest
         public static string Folio_data_update_url;
         public static string Folio_task_url;
         public static string Folio_image_url;
+    }
+    public class Folio_record
+    {
+        public static string Rec_Type;
+        public static string catalog_id;
+        public static int Rec_Index;
+        public static string catalog_instanceId;
+        public static bool Rec_Status;
+        public static string Rec_Data;
     }
 }
