@@ -17,33 +17,30 @@ namespace mytest
 
         private void menu_open_MarcEdit_form_Click(object sender, EventArgs e)
         {
-            var ef = Program.EditForm;
-            if(ef.Visible == true)
+            if(Program.EditForm.Visible == true)
             {
-                ef.Activate();
+                Program.EditForm.Activate();
                 return;
             }
-            ef.MdiParent = this;
-            ef.Show();
+            Program.EditForm.MdiParent = this;
+            Program.EditForm.Show();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            var ef = Program.EditForm;
-            ef.MdiParent = this;
-            ef.Show();
+            Program.EditForm.MdiParent = this;
+            Program.EditForm.Show();
         }
         private void menu_open_SearchForm_Click(object sender, EventArgs e)
         {
-            var sf = Program.SearchForm;
-            if (sf.Visible == true)
+            if (Program.SearchForm.Visible == true)
             {
-                sf.Activate();
+                Program.SearchForm.Activate();
                 return;
             }
 
-            sf.MdiParent = this;
-            sf.Show();
+            Program.SearchForm.MdiParent = this;
+            Program.SearchForm.Show();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -61,15 +58,14 @@ namespace mytest
 
         private void menu_open_task_form_Click(object sender, EventArgs e)
         {
-            var tf = Program.TaskForm;
-            if (tf.Visible == true)
+            if (Program.TaskForm.Visible == true)
             {
-                tf.Activate();
+                Program.TaskForm.Activate();
                 return;
             }
 
-            tf.MdiParent = this;
-            tf.Show();
+            Program.TaskForm.MdiParent = this;
+            Program.TaskForm.Show();
         }
     }
 }

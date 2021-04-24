@@ -31,7 +31,6 @@ namespace mytest
         {
             this.marcEditor1 = new DigitalPlatform.Marc.MarcEditor();
             this.btn_loadrecord_from_disk = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
             this.txt_recordid = new System.Windows.Forms.TextBox();
             this.btn_fetch_record = new System.Windows.Forms.Button();
             this.btn_save_record = new System.Windows.Forms.Button();
@@ -41,7 +40,7 @@ namespace mytest
             // 
             // marcEditor1
             // 
-            this.marcEditor1.CaptionFont = new System.Drawing.Font("宋体", 9F);
+            this.marcEditor1.CaptionFont = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.marcEditor1.ContentBackColor = System.Drawing.SystemColors.Window;
             this.marcEditor1.ContentTextColor = System.Drawing.SystemColors.WindowText;
             this.marcEditor1.CurrentImeMode = System.Windows.Forms.ImeMode.NoControl;
@@ -56,7 +55,6 @@ namespace mytest
             this.marcEditor1.IndicatorTextColor = System.Drawing.Color.Green;
             this.marcEditor1.Lang = "zh";
             this.marcEditor1.Location = new System.Drawing.Point(12, 83);
-            this.marcEditor1.Marc = "";
             this.marcEditor1.MarcDefDom = null;
             this.marcEditor1.Name = "marcEditor1";
             this.marcEditor1.NameBackColor = System.Drawing.SystemColors.Window;
@@ -73,54 +71,45 @@ namespace mytest
             // 
             // btn_loadrecord_from_disk
             // 
-            this.btn_loadrecord_from_disk.Location = new System.Drawing.Point(256, 41);
+            this.btn_loadrecord_from_disk.Location = new System.Drawing.Point(1090, 499);
             this.btn_loadrecord_from_disk.Name = "btn_loadrecord_from_disk";
-            this.btn_loadrecord_from_disk.Size = new System.Drawing.Size(108, 28);
+            this.btn_loadrecord_from_disk.Size = new System.Drawing.Size(152, 28);
             this.btn_loadrecord_from_disk.TabIndex = 1;
-            this.btn_loadrecord_from_disk.Text = "从磁盘加载记录";
+            this.btn_loadrecord_from_disk.Text = "测试从磁盘加载记录";
             this.btn_loadrecord_from_disk.UseVisualStyleBackColor = true;
             this.btn_loadrecord_from_disk.Click += new System.EventHandler(this.btn_loadrecord_from_disk_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label1.Location = new System.Drawing.Point(12, 13);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(56, 16);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "任务ID";
             // 
             // txt_recordid
             // 
             this.txt_recordid.BackColor = System.Drawing.Color.Black;
             this.txt_recordid.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txt_recordid.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-            this.txt_recordid.Location = new System.Drawing.Point(74, 9);
+            this.txt_recordid.Location = new System.Drawing.Point(1090, 591);
             this.txt_recordid.Name = "txt_recordid";
-            this.txt_recordid.Size = new System.Drawing.Size(518, 26);
+            this.txt_recordid.Size = new System.Drawing.Size(152, 26);
             this.txt_recordid.TabIndex = 9;
             this.txt_recordid.Text = "55f335f9-d795-42d8-afbf-d80c1c0bb46c";
             // 
             // btn_fetch_record
             // 
             this.btn_fetch_record.ForeColor = System.Drawing.Color.Blue;
-            this.btn_fetch_record.Location = new System.Drawing.Point(15, 41);
+            this.btn_fetch_record.Location = new System.Drawing.Point(1090, 557);
             this.btn_fetch_record.Name = "btn_fetch_record";
-            this.btn_fetch_record.Size = new System.Drawing.Size(118, 28);
+            this.btn_fetch_record.Size = new System.Drawing.Size(152, 28);
             this.btn_fetch_record.TabIndex = 15;
-            this.btn_fetch_record.Text = "加载Folio记录";
+            this.btn_fetch_record.Text = "测试加载Folio记录";
             this.btn_fetch_record.UseVisualStyleBackColor = true;
             this.btn_fetch_record.Click += new System.EventHandler(this.btn_fetch_record_Click);
             // 
             // btn_save_record
             // 
+            this.btn_save_record.Font = new System.Drawing.Font("宋体", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btn_save_record.ForeColor = System.Drawing.Color.Red;
-            this.btn_save_record.Location = new System.Drawing.Point(139, 41);
+            this.btn_save_record.Location = new System.Drawing.Point(153, 12);
             this.btn_save_record.Name = "btn_save_record";
-            this.btn_save_record.Size = new System.Drawing.Size(111, 28);
+            this.btn_save_record.Size = new System.Drawing.Size(136, 38);
             this.btn_save_record.TabIndex = 16;
-            this.btn_save_record.Text = "保存到Folio";
+            this.btn_save_record.Text = "保存到服务器";
             this.btn_save_record.UseVisualStyleBackColor = true;
             this.btn_save_record.Click += new System.EventHandler(this.btn_save_record_Click);
             // 
@@ -148,13 +137,12 @@ namespace mytest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1008, 729);
+            this.ClientSize = new System.Drawing.Size(1289, 729);
             this.Controls.Add(this.btn_200g_2_702);
             this.Controls.Add(this.btn_200f_2_7xx);
             this.Controls.Add(this.btn_save_record);
             this.Controls.Add(this.btn_fetch_record);
             this.Controls.Add(this.txt_recordid);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.btn_loadrecord_from_disk);
             this.Controls.Add(this.marcEditor1);
             this.Name = "EditForm";
@@ -171,7 +159,6 @@ namespace mytest
 
         private DigitalPlatform.Marc.MarcEditor marcEditor1;
         private System.Windows.Forms.Button btn_loadrecord_from_disk;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txt_recordid;
         private System.Windows.Forms.Button btn_fetch_record;
         private System.Windows.Forms.Button btn_save_record;

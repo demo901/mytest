@@ -237,7 +237,7 @@ namespace mytest
                 return;
             int i = start_index;
 
-            this.listView1.BeginUpdate();
+            listView1.BeginUpdate();
             foreach (DigitalPlatform.Z3950.Record record in records)
             {
                 if (string.IsNullOrEmpty(record.m_strDiagSetID) == false)
@@ -294,33 +294,31 @@ namespace mytest
 
                 i++;
             }
-            this.listView1.EndUpdate();
+            listView1.EndUpdate();
         }
 
         private void listView1_DoubleClick(object sender, EventArgs e)
         {
-            int selectCount = listView1.SelectedItems.Count; //选中的行数目，listview1是控件名。
+            int selectCount = listView1.SelectedItems.Count;
             if (selectCount == 0)
                 return; //没选中，不做响应
 
             int rec_id = Convert.ToInt32(listView1.SelectedItems[0].Text);
 
-            //加载数据到编辑器
-            Z39_Record.Rec_Status = true;
-            Z39_Record.Rec_Data = z39_record_data[rec_id];
-            Z39_Record.Rec_Type = z39_record_type[rec_id];
+            //将要加载到编辑器的数据保存到全局变量
+            Z39_Record.rec_status = true;
+            Z39_Record.rec_data = z39_record_data[rec_id];
+            Z39_Record.rec_type = z39_record_type[rec_id];
 
             Program.EditForm.Show();
             Program.EditForm.Activate();
         }
-
         private void SearchForm_Load(object sender, EventArgs e)
         {
             Result result = LoadEnvironment();
             if (result.Value == -1)
                 MessageBox.Show(this, result.ErrorInfo);
         }
-
         private void SearchForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.Hide();

@@ -5,7 +5,6 @@ namespace mytest
 {
     static class Program
     {
-        static MainForm _mainForm = null;
         static SearchForm _searchForm = null;
         static EditForm _editForm = null;
         static TaskForm _taskForm = null;
@@ -24,14 +23,6 @@ namespace mytest
                 return _editForm;
             }
         }
-        public static MainForm MainForm
-        {
-            get
-            {
-                return _mainForm;
-            }
-        }
-
         public static SearchForm SearchForm
         {
             get
@@ -53,22 +44,20 @@ namespace mytest
             if (loginForm.ShowDialog() == DialogResult.OK)
             {
                 _searchForm = new SearchForm();
-                _mainForm = new MainForm();
                 _editForm = new EditForm();
                 _taskForm = new TaskForm();
 
-                Application.Run(_mainForm);
+                Application.Run(new MainForm());
             }
         }
     }
     public class Z39_Record
     {
-        public static string Rec_Type;
-        public static int Rec_Index;
-        public static string Rec_Data;
-        public static bool Rec_Status;
+        public static string rec_type;
+        public static bool rec_status;
+        public static string rec_data;
     }
-    public class Folio_info
+    public class Folio_Config_Info
     {
         public static string Folio_uname;
         public static string Folio_upass;
@@ -81,13 +70,19 @@ namespace mytest
         public static string Folio_task_url;
         public static string Folio_image_url;
     }
-    public class Folio_record
+    public class Folio_Record
     {
-        public static string Rec_Type;
-        public static string catalog_id;
-        public static int Rec_Index;
-        public static string catalog_instanceId;
-        public static bool Rec_Status;
-        public static string Rec_Data;
+        public static string rec_type;
+        public static bool rec_status;
+        public static string rec_data;
+        public static string id;
+        public static string instanceId;
+        public static string jsonText;
+
+        public static string code;
+        public static string message;
+        public static string success;
+        public static string rawContent;
+        public static string marcContent;
     }
 }

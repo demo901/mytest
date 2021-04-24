@@ -23,13 +23,13 @@ namespace mytest
                 MessageBox.Show("未找到配置文件 folio.config，确认配置正确后再重新运行程序。");
                 return;
             }
-            Folio_info.Folio_uname = txt_username.Text.Trim();
-            Folio_info.Folio_upass = txt_userpass.Text.Trim();
-            Folio_info.Folio_token = "";
+            Folio_Config_Info.Folio_uname = txt_username.Text.Trim();
+            Folio_Config_Info.Folio_upass = txt_userpass.Text.Trim();
+            Folio_Config_Info.Folio_token = "";
 
             m2f = new marc2folio();
             m2f.token_fetch();
-            if(Folio_info.Folio_token == "")
+            if(Folio_Config_Info.Folio_token == "")
             {
                 if (cur_try_time < max_try_times)
                 {
@@ -74,19 +74,19 @@ namespace mytest
                     val = line.Substring(pos + 1).Trim();
 
                     if (key.Equals("FOLIO_TENANT"))
-                        Folio_info.Folio_tenant = val;
+                        Folio_Config_Info.Folio_tenant = val;
                     if (key.Equals("FOLIO_TOKEN_URL"))
-                        Folio_info.Folio_token_url = val;
+                        Folio_Config_Info.Folio_token_url = val;
                     if (key.Equals("FOLIO_DATA_GET_URL"))
-                        Folio_info.Folio_data_get_url = val;
+                        Folio_Config_Info.Folio_data_get_url = val;
                     if (key.Equals("FOLIO_DATA_ADD_URL"))
-                        Folio_info.Folio_data_add_url = val;
+                        Folio_Config_Info.Folio_data_add_url = val;
                     if (key.Equals("FOLIO_DATA_UPDATE_URL"))
-                        Folio_info.Folio_data_update_url = val;
+                        Folio_Config_Info.Folio_data_update_url = val;
                     if (key.Equals("FOLIO_TASK_URL"))
-                        Folio_info.Folio_task_url = val;
+                        Folio_Config_Info.Folio_task_url = val;
                     if (key.Equals("FOLIO_IMAGE_URL"))
-                        Folio_info.Folio_image_url = val;
+                        Folio_Config_Info.Folio_image_url = val;
                 }
             }
             return true;

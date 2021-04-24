@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using System.IO;
 using System.Xml;
+using System.Text;
 
 using DigitalPlatform.Marc;
 
@@ -9,8 +10,8 @@ namespace mytest
 {
     public partial class EditForm : Form
     {
-        string marcType = "unimarc";
-        marc2folio m2f = null;
+        marc2folio m2f = null;//提供数据转换功能的类
+        Encoding _encoding = Encoding.GetEncoding("UTF-8");
 
         public EditForm()
         {
@@ -21,7 +22,7 @@ namespace mytest
             m2f = new marc2folio();
         }
 
-        //从磁盘加载记录
+        //功能测试
         private void btn_loadrecord_from_disk_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -31,21 +32,39 @@ namespace mytest
             ofd.CheckPathExists = true;
             if (ofd.ShowDialog() == DialogResult.OK) //用户点击确认按钮，发送确认消息
             {
-                m2f.json_record.rawRecordContent = File.ReadAllText(ofd.FileName);
-                m2f.marc2dc();
+                string str_data = File.ReadAllText(ofd.FileName);
+                byte[] str_bytes = _encoding.GetBytes(str_data);
+
+                int nRet = MarcLoader.ConvertIso2709ToMarcString(str_bytes,
+                    _encoding,
+                    true,
+                    out string strMARC,
+                    out string strError);
+                if (nRet == -1)
+                {
+                    MessageBox.Show("加载本地记录失败: " + strError);
+                    return;
+                }
+
                 marcEditor1.MarcDefDom = null;
-                marcEditor1.Marc = m2f.dcmarcText;
-                Z39_Record.Rec_Status = false;
+                marcEditor1.Marc = strMARC;
+
+                Z39_Record.rec_status = false;
+                Folio_Record.rec_status = false;
             }
         }
 
         private void marcEditor1_GetConfigDom(object sender, DigitalPlatform.Marc.GetConfigDomEventArgs e)
         {
             // e.Path 中可能是 "marcdef" 或 "marcvaluelist"
-            if (Z39_Record.Rec_Type != null)
-                marcType = Z39_Record.Rec_Type;
-
+            string marcType = "unimarc";
             string filename = "";
+
+            if (Z39_Record.rec_status == true && Z39_Record.rec_type != null)
+                marcType = Z39_Record.rec_type;
+            if (Folio_Record.rec_status == true && Folio_Record.rec_type != null)
+                marcType = Folio_Record.rec_type;
+            
             if (marcType.Equals("unimarc"))
             {
                 filename = "1_2_840_10003_5_1\\marcvaluelist";
@@ -64,38 +83,57 @@ namespace mytest
             dom.Load(filename);
             e.XmlDocument = dom;
         }
+        //功能测试
         private void btn_fetch_record_Click(object sender, EventArgs e)
         {
-            m2f.data_fetch(txt_recordid.Text);
-            m2f.json_data_process();
-            m2f.marc2dc();
+            string jsonText = m2f.fetch_json_from_folio(txt_recordid.Text);
+            m2f.get_data_from_json(jsonText);
 
-            Z39_Record.Rec_Type = "unimarc";
-            MarcRecord marc_record = new MarcRecord(m2f.dcmarcText);
+            byte[] str_bytes = _encoding.GetBytes(Folio_Record.rawContent);
+
+            int nRet = MarcLoader.ConvertIso2709ToMarcString(str_bytes,
+                _encoding,
+                true,
+                out string strMARC,
+                out string strError);
+            if (nRet == -1)
+            {
+                MessageBox.Show("转换记录失败: " + strError);
+                return;
+            }
+
+            Z39_Record.rec_type = "unimarc";
+            MarcRecord marc_record = new MarcRecord(strMARC);
             string content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
             if (content == null)
             {
-                Z39_Record.Rec_Type = "usmarc";
+                Z39_Record.rec_type = "usmarc";
             }
             marcEditor1.MarcDefDom = null;
-            marcEditor1.Marc = m2f.dcmarcText;
-            Z39_Record.Rec_Status = false;
+            marcEditor1.Marc = strMARC;
+            Z39_Record.rec_status = false;
         }
+        //保存数据到服务器
         private void btn_save_record_Click(object sender, EventArgs e)
         {
-            string marc_str = m2f.dc2marc(marcEditor1.Marc);
-            string json_str = m2f.marc2json_folio(Folio_record.catalog_id, Folio_record.catalog_instanceId, marc_str);
+            byte[] in_bytes = _encoding.GetBytes(marcEditor1.Marc);
+            int nRet = MarcUtil.BuildISO2709Record(in_bytes, out byte[] out_bytes);
+            if(nRet != 0)
+            {
+                MessageBox.Show("转换ISO2709格式失败，未能保存数据到服务器。");
+                return;
+            }
 
-            string result = m2f.data_update_folio(json_str);
+            string marc_str = _encoding.GetString(out_bytes);
+            string json_str = m2f.marc2json_for_folio(Folio_Record.id, Folio_Record.instanceId, marc_str);
+            string result = m2f.update_folio(json_str);
+
             if (result.Equals("OK"))
-            {
                 MessageBox.Show("更新成功");
-            }
             else
-            {
-                MessageBox.Show("保存记录失败");
-            }
+                MessageBox.Show("保存记录失败：" + result);
         }
+        //整理例程
         void Copy200gfTo7xxa(string strFromSubfield, string strToField)
         {
             Field field_200 = marcEditor1.Record.Fields.GetOneField("200", 0);
@@ -153,31 +191,30 @@ namespace mytest
         {
             Copy200gfTo7xxa("g", "702");
         }
-
+        //禁止直接关闭当前窗口
         private void EditForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.Hide();
             e.Cancel = true; //取消关闭操作
         }
 
+        //窗口激活时刷新编辑器里的数据
         private void EditForm_Activated(object sender, EventArgs e)
         {
-            if (Z39_Record.Rec_Status == false && Folio_record.Rec_Status == false)
+            if (Z39_Record.rec_status == false && Folio_Record.rec_status == false)
                 return;
 
             marcEditor1.MarcDefDom = null;
-            if (Z39_Record.Rec_Status == true)
+            if (Z39_Record.rec_status == true)
             {
-                marcEditor1.Marc = Z39_Record.Rec_Data;
-                Z39_Record.Rec_Status = false;
+                marcEditor1.Marc = Z39_Record.rec_data;
+                Z39_Record.rec_status = false;
             }
-            if(Folio_record.Rec_Status == true)
+            if(Folio_Record.rec_status == true)
             {
-                marcEditor1.Marc = Folio_record.Rec_Data;
-                Folio_record.Rec_Status = false;
+                marcEditor1.Marc = Folio_Record.rec_data;
+                Folio_Record.rec_status = false;
             }
-            
         }
-
     }
 }
