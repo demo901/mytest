@@ -12,11 +12,14 @@ namespace mytest
 {
     public partial class EditForm : Form
     {
-        static int max_record_count = 10;//定义一次获取的最大记录数量
-
+        static int max_record_count = 20;//定义一次获取的最大记录数量
+        string marcType = "unimarc";
         private SearchForm sf = Program.SearchForm;
         marc2folio m2f = null;
-        string[] pending_catalog_array = null;
+        string[] pending_catalog_id = null;
+        string[] pending_catalog_instanceId = null;
+        string cur_id = "";
+        string cur_instanceId = "";
 
         public EditForm()
         {
@@ -24,16 +27,10 @@ namespace mytest
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            pending_catalog_array = new string[max_record_count];
+            pending_catalog_id = new string[max_record_count];
+            pending_catalog_instanceId = new string[max_record_count];
 
-            m2f = new marc2folio(
-                Folio_info.Folio_uname, 
-                Folio_info.Folio_upass, 
-                Folio_info.Folio_tenant,
-                Folio_info.Folio_token_url,
-                Folio_info.Folio_data_url,
-                Folio_info.Folio_catalog_url,
-                Folio_info.Folio_image_url);
+            m2f = new marc2folio();
             m2f.token_fetch();
         }
 
@@ -48,6 +45,7 @@ namespace mytest
             {
                 m2f.json_record.rawRecordContent = File.ReadAllText(ofd.FileName);
                 m2f.marc2dc();
+                marcEditor1.MarcDefDom = null;
                 marcEditor1.Marc = m2f.dcmarcText;
                 Z39_Record.Rec_Status = false;
             }
@@ -56,7 +54,8 @@ namespace mytest
         private void marcEditor1_GetConfigDom(object sender, DigitalPlatform.Marc.GetConfigDomEventArgs e)
         {
             // e.Path 中可能是 "marcdef" 或 "marcvaluelist"
-            string marcType = Z39_Record.Rec_Type;
+            if(Z39_Record.Rec_Type != null)
+                marcType = Z39_Record.Rec_Type;
 
             //MessageBox.Show("marcType:" + marcType + ",e.path=" + e.Path);
 
@@ -99,9 +98,14 @@ namespace mytest
         private void btn_save_record_Click(object sender, EventArgs e)
         {
             string marc_str = m2f.dc2marc(marcEditor1.Marc);
-            string json_str = m2f.marc2json(marc_str);
+            string json_str = m2f.marc2json_folio(cur_id, cur_instanceId, marc_str);
 
-            m2f.data_post(json_str);
+            string result = m2f.data_update_folio(json_str);
+            Console.WriteLine(result);
+            if (result.Equals("OK"))
+            {
+                MessageBox.Show("更新成功");
+            }
         }
         void Copy200gfTo7xxa(string strFromSubfield, string strToField)
         {
@@ -203,8 +207,7 @@ namespace mytest
         private void btn_catalog_waiting_Click(object sender, EventArgs e)
         {
             string jsonText = "";
-            jsonText = m2f.catalog_fetch("PENDING_CATALOG", 1, 10);
-            //jsonText = "{\"code\":200,\"message\":\"SUCCESS\",\"data\":{\"pageNum\":1,\"pageSize\":10,\"pages\":1,\"total\":1,\"content\":[{\"id\":\"7d2a8497-2d29-42fa-a25b-1f8cd68c1cd2\",\"name\":\"C16841\",\"title\":\"中国史\",\"cip\":\"2019010108\",\"publisher\":\"云南人民出版社\",\"status\":\"PENDING_CATALOG\",\"endTaskTime\":\"2021-04-19 13:25:52\",\"cataUserId\":\"刘梦洁1\",\"orgId\":\"北京总馆1\",\"isbn\":\"9787222180093\",\"instanceId\":\"e0c31bf3-a2da-4f34-9918-853e002abd35\"},{\"id\":\"7d2a8497-2d29-42fa-a25b-1f8cd68c1cd3\",\"name\":\"C16842\",\"title\":\"中国史2\",\"cip\":\"2019010109\",\"publisher\":\"云南人民出版社2\",\"status\":\"PENDING_CATALOG\",\"endTaskTime\":\"2021-04-20 13:25:52\",\"cataUserId\":\"刘梦洁2\",\"orgId\":\"北京总馆2\",\"isbn\":\"9787222180094\",\"instanceId\":\"e0c31bf3-a2da-4f34-9918-853e002abd36\"}]},\"success\":true}";
+            jsonText = m2f.task_fetch("PENDING_CATALOG", 1, 20);
 
             JObject jo = (JObject)JsonConvert.DeserializeObject(jsonText);
 
@@ -212,41 +215,48 @@ namespace mytest
             string res_mess = jo["message"].ToString();
             string res_succ = jo["success"].ToString();
 
-            if(!res_code.Equals("200") || !res_mess.Equals("SUCCESS"))
+            if(!res_code.Equals("200") || !res_mess.Equals("SUCCESS") || !res_succ.Equals("True"))
             {
                 MessageBox.Show("获取数据失败");
                 return;
             }
-            /* 这里返回格式变了，暂时注释掉
             var page_Num = jo["data"]["pageNum"];
             var page_Size = jo["data"]["pageSize"];
             var pages = jo["data"]["pages"];
             var total = jo["data"]["total"];
             var content = jo["data"]["content"];
-            */
-            var content = jo["data"];
 
             listView2.Clear();
             this.listView2.Columns.Add("序号",50);
+            this.listView2.Columns.Add("NAME", 50);
             this.listView2.Columns.Add("ISBN",100);
+            this.listView2.Columns.Add("CIP", 100);
             this.listView2.Columns.Add("出版社",150);
             this.listView2.Columns.Add("题名",500);
+            this.listView2.Columns.Add("endTaskTime", 100);
 
             this.listView2.BeginUpdate();
             int i = 0;
             foreach (var t in content)
             {
-                string title = t["title"].ToString();
-                string pub = t["publisher"].ToString();
+                string name = t["name"].ToString();
                 string isbn = t["isbn"].ToString();
+                string cip = t["cip"].ToString();
+                string pub = t["publisher"].ToString();
+                string title = t["title"].ToString();
+                string endtime = t["endTaskTime"].ToString();
 
-                pending_catalog_array[i] = t["instanceId"].ToString();//将ID保存到全局变显数组中
+                pending_catalog_instanceId[i] = t["instanceId"].ToString();//将instanceId保存到全局变显数组中
+                pending_catalog_id[i] = t["id"].ToString();//将id保存到全局变显数组中
 
                 ListViewItem lvi = new ListViewItem();
                 lvi.Text = (i+1).ToString();
+                lvi.SubItems.Add(name);
                 lvi.SubItems.Add(isbn);
+                lvi.SubItems.Add(cip);
                 lvi.SubItems.Add(pub);
                 lvi.SubItems.Add(title);
+                lvi.SubItems.Add(endtime);
                 listView2.Items.Add(lvi);
                 i++;
             }
@@ -260,33 +270,60 @@ namespace mytest
                 return; //没选中，不做响应
 
             int rec_id = Convert.ToInt32(listView2.SelectedItems[0].Text) - 1;
-            
-            //加载记录到编辑器
-            m2f.data_fetch(m2f.image_fetch(pending_catalog_array[rec_id]));
-            m2f.json_data_process();
-            m2f.marc2dc();
+            marcEditor1.Marc = "";
 
-            Z39_Record.Rec_Type = "unimarc";
-            MarcRecord marc_record = new MarcRecord(m2f.dcmarcText);
-            string content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
-            if (content == null)
+            //加载记录到编辑器
+            cur_instanceId = pending_catalog_instanceId[rec_id];
+            cur_id = pending_catalog_id[rec_id];
+
+            m2f.data_fetch(pending_catalog_instanceId[rec_id]);
+            bool bFound = true;
+            if (m2f.jsonText.IndexOf("Couldn't find Record with INSTANCE id") != -1)
             {
-                Z39_Record.Rec_Type = "usmarc";
+                MessageBox.Show("获取MARC数据失败");
+                bFound = false;
             }
-            marcEditor1.MarcDefDom = null;
-            marcEditor1.Marc = m2f.dcmarcText;
-            Z39_Record.Rec_Status = false;
+            if (m2f.jsonText.IndexOf("code\":200,\"message\":\"SUCCESS\",\"success\":true}") != -1)
+            {
+                MessageBox.Show("未找到MARC数据");
+                bFound = false;
+            }
+            
+            if(bFound == true)
+            {
+                try
+                {
+                    m2f.json_data_folio_process();
+                    m2f.marc2dc_folio();
+
+                    Z39_Record.Rec_Type = "unimarc";
+                    MarcRecord marc_record = new MarcRecord(m2f.dcmarcText);
+                    string content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
+                    if (content == null)
+                    {
+                        Z39_Record.Rec_Type = "usmarc";
+                    }
+                    marcEditor1.MarcDefDom = null;
+                    marcEditor1.Marc = m2f.dcmarcText;
+                    Z39_Record.Rec_Status = false;
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show("加载MARC数据异常");
+                    ex.ToString();
+                }
+            }
 
             //加载图片
-            string jsonText = "";// "{\"code\":200,\"message\":\"SUCCESS\",\"data\":[{\"id\":\"6b331104-6922-4faa-abff-b4111273d83d\",\"imageName\":\"C16841_A01.jpg\",\"imageCaption\":\"COVER\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGEVrmcAAAAAFKylDQ936.jpg?token=2c2171a98e62a7c52c8d7e9582c47131&ts=1618756785\"},{\"id\":\"a9cce472-fba3-4889-878d-4f1c54285e7b\",\"imageName\":\"C16841_A02.jpg\",\"imageCaption\":\"COVER\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGECWwYAAAAAN4NTwY510.jpg?token=8da5a157e857148f424950ed8c59f3a5&ts=1618756785\"},{\"id\":\"7e624627-d6d5-49d4-8827-eefaad9f7903\",\"imageName\":\"C16841_B01.jpg\",\"imageCaption\":\"SPINE\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGEaidcAAAAALd276o323.jpg?token=b840e913b5d7363e13ba2ab0de7d28a4&ts=1618756785\"},{\"id\":\"857f0e6c-971e-42d3-9816-9750f3e8b00b\",\"imageName\":\"C16841_C01.jpg\",\"imageCaption\":\"FRONT_PAGE\",\"imageUrl\":\"http://dev.jiatu.info:8777/M00/00/2F/wKgBwGB1XhGEee9rAAAAABHW06A394.jpg?token=4e927af0d6925498afaeb0bdc8b861d4&ts=1618756785\"}],\"success\":true}";
-            jsonText = m2f.image_fetch(pending_catalog_array[rec_id]);
+            string jsonText = "";
+            jsonText = m2f.image_fetch(pending_catalog_instanceId[rec_id]);
             JObject jo = (JObject)JsonConvert.DeserializeObject(jsonText);
 
             string res_code = jo["code"].ToString();
             string res_mess = jo["message"].ToString();
             string res_succ = jo["success"].ToString();
 
-            if (!res_code.Equals("200") || !res_mess.Equals("SUCCESS"))
+            if (!res_code.Equals("200") || !res_mess.Equals("SUCCESS") || !res_succ.Equals("True"))
             {
                 MessageBox.Show("获取图片数据失败");
                 return;

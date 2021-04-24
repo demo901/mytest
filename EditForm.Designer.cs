@@ -62,7 +62,6 @@ namespace mytest
             this.marcEditor1.IndicatorTextColor = System.Drawing.Color.Green;
             this.marcEditor1.Lang = "zh";
             this.marcEditor1.Location = new System.Drawing.Point(12, 83);
-            this.marcEditor1.Marc = "";
             this.marcEditor1.MarcDefDom = null;
             this.marcEditor1.Name = "marcEditor1";
             this.marcEditor1.NameBackColor = System.Drawing.SystemColors.Window;
@@ -229,7 +228,7 @@ namespace mytest
             this.Controls.Add(this.button1);
             this.Controls.Add(this.marcEditor1);
             this.Name = "EditForm";
-            this.Text = "数据加工";
+            this.Text = "数据编辑";
             this.Activated += new System.EventHandler(this.EditForm_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.EditForm_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);

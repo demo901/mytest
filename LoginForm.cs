@@ -25,17 +25,11 @@ namespace mytest
             }
             Folio_info.Folio_uname = txt_username.Text.Trim();
             Folio_info.Folio_upass = txt_userpass.Text.Trim();
+            Folio_info.Folio_token = "";
 
-            m2f = new marc2folio(
-               Folio_info.Folio_uname,
-               Folio_info.Folio_upass,
-               Folio_info.Folio_tenant,
-               Folio_info.Folio_token_url,
-               Folio_info.Folio_data_url,
-               Folio_info.Folio_catalog_url,
-               Folio_info.Folio_image_url);
+            m2f = new marc2folio();
             m2f.token_fetch();
-            if(m2f.cur_Token == "")
+            if(Folio_info.Folio_token == "")
             {
                 if (cur_try_time < max_try_times)
                 {
@@ -51,7 +45,6 @@ namespace mytest
                     Environment.Exit(0);
                 }
             }
-            Folio_info.Folio_token = m2f.cur_Token;//将获取的Token保存到全局变量
             this.DialogResult = DialogResult.OK;
             this.Dispose();
         }
@@ -84,10 +77,14 @@ namespace mytest
                         Folio_info.Folio_tenant = val;
                     if (key.Equals("FOLIO_TOKEN_URL"))
                         Folio_info.Folio_token_url = val;
-                    if (key.Equals("FOLIO_DATA_URL"))
-                        Folio_info.Folio_data_url = val;
-                    if (key.Equals("FOLIO_CATALOG_URL"))
-                        Folio_info.Folio_catalog_url = val;
+                    if (key.Equals("FOLIO_DATA_GET_URL"))
+                        Folio_info.Folio_data_get_url = val;
+                    if (key.Equals("FOLIO_DATA_ADD_URL"))
+                        Folio_info.Folio_data_add_url = val;
+                    if (key.Equals("FOLIO_DATA_UPDATE_URL"))
+                        Folio_info.Folio_data_update_url = val;
+                    if (key.Equals("FOLIO_TASK_URL"))
+                        Folio_info.Folio_task_url = val;
                     if (key.Equals("FOLIO_IMAGE_URL"))
                         Folio_info.Folio_image_url = val;
                 }

@@ -74,8 +74,10 @@ namespace mytest
         public static string Folio_tenant;
         public static string Folio_token;
         public static string Folio_token_url;
-        public static string Folio_data_url;
-        public static string Folio_catalog_url;
+        public static string Folio_data_get_url;
+        public static string Folio_data_add_url;
+        public static string Folio_data_update_url;
+        public static string Folio_task_url;
         public static string Folio_image_url;
     }
 }

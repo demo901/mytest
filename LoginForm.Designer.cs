@@ -61,6 +61,7 @@ namespace mytest
             this.txt_username.Name = "txt_username";
             this.txt_username.Size = new System.Drawing.Size(142, 21);
             this.txt_username.TabIndex = 23;
+            this.txt_username.Text = "zg1_admin";
             // 
             // label3
             // 

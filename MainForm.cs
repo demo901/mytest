@@ -51,5 +51,10 @@ namespace mytest
             //MessageBox.Show("正在关闭程序");
             Environment.Exit(0);
         }
+
+        private void menu_open_task_form_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
