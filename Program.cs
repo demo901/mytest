@@ -7,15 +7,15 @@ namespace mytest
     {
         static SearchForm _searchForm = null;
         static EditForm _editForm = null;
-        static TaskForm _taskForm = null;
+        //static TaskForm _taskForm = null;
 
-        public static TaskForm TaskForm
-        {
-            get
-            {
-                return _taskForm;
-            }
-        }
+        //public static TaskForm TaskForm
+        //{
+        //    get
+        //    {
+        //        return _taskForm;
+        //    }
+        //}
         public static EditForm EditForm
         {
             get
@@ -45,7 +45,7 @@ namespace mytest
             {
                 _searchForm = new SearchForm();
                 _editForm = new EditForm();
-                _taskForm = new TaskForm();
+                //_taskForm = new TaskForm();
 
                 Application.Run(new MainForm());
             }

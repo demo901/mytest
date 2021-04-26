@@ -55,13 +55,12 @@ namespace mytest
             // 
             // listView2
             // 
-            this.listView2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
             this.listView2.HideSelection = false;
-            this.listView2.Location = new System.Drawing.Point(0, 0);
+            this.listView2.Location = new System.Drawing.Point(12, 32);
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(633, 613);
+            this.listView2.Size = new System.Drawing.Size(479, 479);
             this.listView2.TabIndex = 50;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;

@@ -34,7 +34,6 @@ namespace mytest
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.menu_open_MarcEdit_form = new System.Windows.Forms.ToolStripMenuItem();
-            this.menu_open_task_form = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.menu_open_SearchForm = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -85,7 +84,6 @@ namespace mytest
             // 
             this.fileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menu_open_MarcEdit_form,
-            this.menu_open_task_form,
             this.toolStripSeparator3,
             this.menu_open_SearchForm,
             this.toolStripSeparator5,
@@ -101,13 +99,6 @@ namespace mytest
             this.menu_open_MarcEdit_form.Size = new System.Drawing.Size(196, 22);
             this.menu_open_MarcEdit_form.Text = "打开MARC编辑器窗口";
             this.menu_open_MarcEdit_form.Click += new System.EventHandler(this.menu_open_MarcEdit_form_Click);
-            // 
-            // menu_open_task_form
-            // 
-            this.menu_open_task_form.Name = "menu_open_task_form";
-            this.menu_open_task_form.Size = new System.Drawing.Size(196, 22);
-            this.menu_open_task_form.Text = "打开任务列表窗口";
-            this.menu_open_task_form.Click += new System.EventHandler(this.menu_open_task_form_Click);
             // 
             // toolStripSeparator3
             // 
@@ -380,7 +371,6 @@ namespace mytest
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.ToolStripMenuItem menu_open_MarcEdit_form;
         private System.Windows.Forms.ToolStripMenuItem menu_open_SearchForm;
-        private System.Windows.Forms.ToolStripMenuItem menu_open_task_form;
     }
 }
 

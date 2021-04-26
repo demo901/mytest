@@ -64,18 +64,23 @@ namespace mytest
 			request.KeepAlive = true;
 			request.Headers["x-okapi-tenant"] = Folio_Config_Info.Folio_tenant;
 			request.Headers["x-okapi-token"] = Folio_Config_Info.Folio_token;
+			try
+			{
+				var response = (HttpWebResponse)request.GetResponse();  //获取响应，即发送请求
+				Stream responseStream = response.GetResponseStream();
+				var streamReader = new StreamReader(responseStream, Encoding.UTF8);
+				jsonText = streamReader.ReadToEnd();
 
-			var response = (HttpWebResponse)request.GetResponse();  //获取响应，即发送请求
-			Stream responseStream = response.GetResponseStream();
-			var streamReader = new StreamReader(responseStream, Encoding.UTF8);
-			jsonText = streamReader.ReadToEnd();
-
-			streamReader.Close();
-			if (response != null)
-				response.Close();
-			if (request != null)
-				request.Abort();
-
+				streamReader.Close();
+				if (response != null)
+					response.Close();
+				if (request != null)
+					request.Abort();
+			}
+			catch(Exception ex)
+            {
+				ex.ToString();
+            }
 			return jsonText;
 		}
 		public string marc2json_for_folio(string cur_id, string cur_instanceId, string marc)
@@ -284,7 +289,8 @@ namespace mytest
 		public string task_fetch(string status,int pagenum,int pagesize)
 		{
 			HttpWebRequest request = null;
-			string url = Folio_Config_Info.Folio_task_url + "?status=" + status + "&pageNum=" + pagenum + "&pageSize=" + pagesize;
+			string url = Folio_Config_Info.Folio_task_url + "?status=" + status + "&pageSize=" + pagesize + "&pageNum=" + pagenum;
+			Console.WriteLine(url);
 			if (Folio_Config_Info.Folio_task_url.StartsWith("https", StringComparison.OrdinalIgnoreCase))
 			{
 				request = WebRequest.Create(url) as HttpWebRequest;
@@ -307,17 +313,24 @@ namespace mytest
 			request.Headers["x-okapi-tenant"] = Folio_Config_Info.Folio_tenant;
 			request.Headers["x-okapi-token"] = Folio_Config_Info.Folio_token;
 
-			var response = (HttpWebResponse)request.GetResponse();
-			Stream responseStream = response.GetResponseStream();
-			var streamReader = new StreamReader(responseStream, Encoding.UTF8);
-			string res = streamReader.ReadToEnd();
+			string res = "";
 
-			streamReader.Close();
-			if (response != null)
-				response.Close();
-			if (request != null)
-				request.Abort();
+			try
+			{
+				var response = (HttpWebResponse)request.GetResponse();
+				Stream responseStream = response.GetResponseStream();
+				var streamReader = new StreamReader(responseStream, Encoding.UTF8);
+				res = streamReader.ReadToEnd();
 
+				streamReader.Close();
+				if (response != null)
+					response.Close();
+				if (request != null)
+					request.Abort();
+			}catch(Exception ex)
+            {
+				ex.ToString();
+            }
 			return res;
 		}
 
@@ -349,17 +362,23 @@ namespace mytest
 			request.Headers["x-okapi-tenant"] = Folio_Config_Info.Folio_tenant;
 			request.Headers["x-okapi-token"] = Folio_Config_Info.Folio_token;
 
-			var response = (HttpWebResponse)request.GetResponse();
-			Stream responseStream = response.GetResponseStream();
-			var streamReader = new StreamReader(responseStream, Encoding.UTF8);
-			string res = streamReader.ReadToEnd();
+			string res = "";
+			try
+			{
+				var response = (HttpWebResponse)request.GetResponse();
+				Stream responseStream = response.GetResponseStream();
+				var streamReader = new StreamReader(responseStream, Encoding.UTF8);
+				res = streamReader.ReadToEnd();
 
-			streamReader.Close();
-			if (response != null)
-				response.Close();
-			if (request != null)
-				request.Abort();
-
+				streamReader.Close();
+				if (response != null)
+					response.Close();
+				if (request != null)
+					request.Abort();
+			}catch(Exception ex)
+            {
+				ex.ToString();
+            }
 			return res;
 		}
 	}

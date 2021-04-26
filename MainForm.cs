@@ -56,16 +56,16 @@ namespace mytest
             }
         }
 
-        private void menu_open_task_form_Click(object sender, EventArgs e)
-        {
-            if (Program.TaskForm.Visible == true)
-            {
-                Program.TaskForm.Activate();
-                return;
-            }
+        //private void menu_open_task_form_Click(object sender, EventArgs e)
+        //{
+        //    if (Program.TaskForm.Visible == true)
+        //    {
+        //        Program.TaskForm.Activate();
+        //        return;
+        //    }
 
-            Program.TaskForm.MdiParent = this;
-            Program.TaskForm.Show();
-        }
+        //    Program.TaskForm.MdiParent = this;
+        //    Program.TaskForm.Show();
+        //}
     }
 }
