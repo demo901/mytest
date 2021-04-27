@@ -87,6 +87,10 @@ namespace mytest
                         Folio_Config_Info.Folio_task_url = val;
                     if (key.Equals("FOLIO_IMAGE_URL"))
                         Folio_Config_Info.Folio_image_url = val;
+                    if (key.Equals("FOLIO_FIELD_INFO_URL"))
+                    {
+                        Folio_Config_Info.Folio_field_info_url = val;
+                    }
                 }
             }
             return true;

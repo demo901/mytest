@@ -3,21 +3,40 @@ using System.Windows.Forms;
 using System.IO;
 using System.Xml;
 using System.Text;
+using System.Threading.Tasks;
 
 using DigitalPlatform.Marc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static DigitalPlatform.Z3950.ZClient;
+using DigitalPlatform.Text;
+using DigitalPlatform.Z3950;
+using DigitalPlatform.Net;
+using DigitalPlatform.Script;
 
 namespace mytest
 {
     public partial class EditForm : Form
     {
-        const int MAX_RECORD = 20;//定义一次获取的最大记录数量
+        const int MAX_RECORD_Z39 = 10;//一次最多取10条z39记录
+        ZClient _zclient = new ZClient();
+        IsbnSplitter _isbnSplitter = null;
+        UseCollection _useList = new UseCollection();
+        TargetInfo _targetInfo = new TargetInfo();
+        long _resultCount = 0;   // 检索命中条数
+        int _fetched = 0;   // 已经 Present 获取的条数
+        string[] _z39_record_data = null;
+        string[] _z39_record_type = null;
+
+        const int MAX_RECORD_FOLIO = 20;//定义一次获取的最大记录数量
         string[] _catalog_id = null;
         string[] _catalog_instanceId = null;
+        int _saved_Field_Index = 0;
 
         marc2folio m2f = null;//提供数据转换功能的类
         Encoding _encoding = Encoding.GetEncoding("UTF-8");
+        string marcType = "unimarc";
+        string jsonText = "";
 
         public EditForm()
         {
@@ -26,8 +45,282 @@ namespace mytest
         private void Form1_Load(object sender, EventArgs e)
         {
             m2f = new marc2folio();
-            _catalog_id = new string[MAX_RECORD];
-            _catalog_instanceId = new string[MAX_RECORD];
+            _catalog_id = new string[MAX_RECORD_FOLIO];
+            _catalog_instanceId = new string[MAX_RECORD_FOLIO];
+            _z39_record_data = new string[MAX_RECORD_Z39];
+            _z39_record_type = new string[MAX_RECORD_Z39];
+
+            Result result = LoadEnvironment();
+            if (result.Value == -1)
+                MessageBox.Show(this, result.ErrorInfo);
+        }
+        Result LoadEnvironment()
+        {
+            try
+            {
+                this._isbnSplitter = new IsbnSplitter(Path.Combine(Environment.CurrentDirectory, "rangemessage.xml"));  // "\\isbn.xml"
+            }
+            catch (FileNotFoundException ex)
+            {
+                return new Result { Value = -1, ErrorInfo = "装载本地 isbn 规则文件 rangemessage.xml 发生错误 :" + ex.Message };
+            }
+            catch (Exception ex)
+            {
+                return new Result { Value = -1, ErrorInfo = "装载本地 isbn 规则文件发生错误 :" + ex.Message };
+            }
+
+            Result result = _useList.Load(Path.Combine(Environment.CurrentDirectory, "bib1use.xml"));
+            if (result.Value == -1)
+                return result;
+
+            string[] fromlist = this._useList.GetDropDownList();
+            this.comboBox_use.Items.AddRange(fromlist);
+
+            return new Result();
+        }
+        // 创建只包含一个检索词的简单 XML 检索式
+        // 注：这种 XML 检索式不是 Z39.50 函数库必需的。只是用它来方便构造 API 检索式的过程
+        public string BuildQueryXml()
+        {
+            XmlDocument dom = new XmlDocument();
+            dom.LoadXml("<root />");
+            {
+                XmlElement node = dom.CreateElement("line");
+                dom.DocumentElement.AppendChild(node);
+
+                string strLogic = "OR";
+                string strFrom = this.comboBox_use.Text;
+
+                node.SetAttribute("logic", strLogic);
+                node.SetAttribute("word", this.textBox_queryWord.Text);
+                node.SetAttribute("from", strFrom);
+            }
+
+            return dom.OuterXml;
+        }
+        int GetAuthentcationMethod()
+        {
+            return (this.radioButton_authenStyleIdpass.Checked ? 1 : 0);
+        }
+        private async void button_search_Click(object sender, EventArgs e)
+        {
+            listView1.Clear();
+
+            this.listView1.Columns.Add("序号");
+            this.listView1.Columns.Add("ISBN");
+            this.listView1.Columns.Add("出版年");
+            this.listView1.Columns.Add("题名");
+            this.listView1.Columns.Add("作者");
+            this.listView1.Columns.Add("出版社");
+
+            string strError = "";
+
+            _resultCount = 0;
+            _fetched = 0;
+
+            try
+            {
+                // 如果 _targetInfo 涉及到的信息字段对比环境没有变化，就持续使用
+                if (_targetInfo.HostName != this.textBox_serverAddr.Text
+                    || _targetInfo.Port != Convert.ToInt32(this.textBox_serverPort.Text)
+                    || string.Join(",", _targetInfo.DbNames) != this.textBox_database.Text
+                    || _targetInfo.AuthenticationMethod != GetAuthentcationMethod()
+                    || _targetInfo.UserName != this.textBox_userName.Text
+                    || _targetInfo.Password != this.textBox_password.Text)
+                {
+                    _targetInfo = new TargetInfo
+                    {
+                        HostName = this.textBox_serverAddr.Text,
+                        Port = Convert.ToInt32(this.textBox_serverPort.Text),
+                        DbNames = StringUtil.SplitList(this.textBox_database.Text).ToArray(),
+                        AuthenticationMethod = GetAuthentcationMethod(),
+                        GroupID = this.textBox_groupID.Text,
+                        UserName = this.textBox_userName.Text,
+                        Password = this.textBox_password.Text,
+                        DefaultRecordsEncoding = Encoding.GetEncoding("UTF-8"),
+                    };
+                    _zclient.CloseConnection();
+                }
+
+                IsbnConvertInfo isbnconvertinfo = new IsbnConvertInfo
+                {
+                    IsbnSplitter = this._isbnSplitter,
+                    ConvertStyle =
+                    (_targetInfo.IsbnAddHyphen == true ? "addhyphen," : "")
+                    + (_targetInfo.IsbnRemoveHyphen == true ? "removehyphen," : "")
+                    + (_targetInfo.IsbnForce10 == true ? "force10," : "")
+                    + (_targetInfo.IsbnForce13 == true ? "force13," : "")
+                    + (_targetInfo.IsbnWild == true ? "wild," : "")
+                };
+
+                string strQueryString = "";
+
+                if (true)
+                {
+                    // 创建只包含一个检索词的简单 XML 检索式
+                    // 注：这种 XML 检索式不是 Z39.50 函数库必需的。只是用它来方便构造 API 检索式的过程
+                    string strQueryXml = BuildQueryXml();
+                    // 将 XML 检索式变化为 API 检索式
+                    Result result = ZClient.ConvertQueryString(this._useList, strQueryXml, isbnconvertinfo, out strQueryString);
+                    if (result.Value == -1)
+                    {
+                        strError = result.ErrorInfo;
+                        goto ERROR1;
+                    }
+                }
+
+            REDO_SEARCH:
+                {
+                    // return Value:
+                    //      -1  出错
+                    //      0   成功
+                    //      1   调用前已经是初始化过的状态，本次没有进行初始化
+
+                    InitialResult result = await _zclient.TryInitialize(_targetInfo);
+                    if (result.Value == -1)
+                    {
+                        strError = "Initialize error: " + result.ErrorInfo;
+                        goto ERROR1;
+                    }
+                }
+
+                // result.Value:
+                //		-1	error
+                //		0	fail
+                //		1	succeed
+                // result.ResultCount:
+                //      命中结果集内记录条数 (当 result.Value 为 1 时)
+                SearchResult search_result = await _zclient.Search(strQueryString, _targetInfo.DefaultQueryTermEncoding, _targetInfo.DbNames, _targetInfo.PreferredRecordSyntax, "default");
+                if (search_result.Value == -1 || search_result.Value == 0)
+                {
+                    MessageBox.Show(" 检索出错 " + search_result.ErrorInfo);
+                    if (search_result.ErrorCode == "ConnectionAborted")
+                    {
+                        MessageBox.Show(" 自动重试检索 ...");
+                        goto REDO_SEARCH;
+                    }
+                }
+                _resultCount = search_result.ResultCount;
+                await FetchRecords(_targetInfo);
+
+                return;
+            }
+            finally
+            {
+
+            }
+
+        ERROR1:
+            MessageBox.Show(this, strError);
+        }
+        async Task FetchRecords(TargetInfo targetinfo)
+        {
+            try
+            {
+                if (_resultCount - _fetched > 0)
+                {
+                    PresentResult present_result = await _zclient.Present(
+                        "default",
+                        _fetched,
+                        Math.Min((int)_resultCount - _fetched, 10),
+                        10,
+                        "F",
+                        targetinfo.PreferredRecordSyntax);
+                    if (present_result.Value == -1)
+                    {
+                        this.Invoke((Action)(() => MessageBox.Show(this, present_result.ToString())));
+                    }
+                    else
+                    {
+                        // 把 MARC 记录显示出来
+                        AppendMarcRecords(present_result.Records,
+                            _zclient.ForcedRecordsEncoding == null ? targetinfo.DefaultRecordsEncoding : _zclient.ForcedRecordsEncoding,
+                            _fetched);
+                        _fetched += present_result.Records.Count;
+                    }
+                }
+            }
+            finally
+            {
+
+            }
+        }
+        void AppendMarcRecords(RecordCollection records, Encoding encoding, int start_index)
+        {
+            if (records == null)
+                return;
+            int i = start_index;
+
+            listView1.BeginUpdate();
+            foreach (DigitalPlatform.Z3950.Record record in records)
+            {
+                if (string.IsNullOrEmpty(record.m_strDiagSetID) == false)
+                {
+                    // 这是诊断记录
+                    i++;
+                    continue;
+                }
+                int nRet = MarcLoader.ConvertIso2709ToMarcString(record.m_baRecord,
+                    encoding == null ? Encoding.GetEncoding(936) : encoding,
+                    true,
+                    out string strMARC,
+                    out string strError);
+                if (nRet == -1)
+                {
+                    i++;
+                    continue;
+                }
+
+                _z39_record_data[i] = strMARC;
+                _z39_record_type[i] = "unimarc";
+
+                MarcRecord marc_record = new MarcRecord(strMARC);
+                string content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
+                string isbn = "";
+                string year = "";
+                string author = "";
+                string publish = "";
+                if (content == null)
+                {
+                    content = marc_record.select("field[@name='245']/subfield[@name='a']").FirstContent;
+                    _z39_record_type[i] = "usmarc";
+                    isbn = marc_record.select("field[@name='020']/subfield[@name='a']").FirstContent;
+                    year = marc_record.select("field[@name='260']/subfield[@name='c']").FirstContent;
+                    author = marc_record.select("field[@name='245']/subfield[@name='c']").FirstContent;
+                    publish = marc_record.select("field[@name='260']/subfield[@name='b']").FirstContent;
+                }
+                else
+                {
+                    isbn = marc_record.select("field[@name='010']/subfield[@name='a']").FirstContent;
+                    year = marc_record.select("field[@name='210']/subfield[@name='d']").FirstContent;
+                    author = marc_record.select("field[@name='200']/subfield[@name='f']").FirstContent;
+                    publish = marc_record.select("field[@name='210']/subfield[@name='c']").FirstContent;
+                }
+
+                ListViewItem lvi = new ListViewItem();
+                lvi.Text = i.ToString();
+                lvi.SubItems.Add(isbn);
+                lvi.SubItems.Add(year);
+                lvi.SubItems.Add(content);
+                lvi.SubItems.Add(author);
+                lvi.SubItems.Add(publish);
+                listView1.Items.Add(lvi);
+
+                i++;
+            }
+            listView1.EndUpdate();
+        }
+
+        private void listView1_DoubleClick(object sender, EventArgs e)
+        {
+            int selectCount = listView1.SelectedItems.Count;
+            if (selectCount == 0)
+                return; //没选中，不做响应
+
+            int rec_id = Convert.ToInt32(listView1.SelectedItems[0].Text);
+
+            marcEditor1.MarcDefDom = null;
+            marcEditor1.Marc = _z39_record_data[rec_id];
         }
 
         //功能测试
@@ -53,26 +346,16 @@ namespace mytest
                     MessageBox.Show("加载本地记录失败: " + strError);
                     return;
                 }
-
+                //在这里合并版本馆记录
                 marcEditor1.MarcDefDom = null;
                 marcEditor1.Marc = strMARC;
-
-                Z39_Record.rec_status = false;
-                Folio_Record.rec_status = false;
             }
         }
 
         private void marcEditor1_GetConfigDom(object sender, DigitalPlatform.Marc.GetConfigDomEventArgs e)
         {
             // e.Path 中可能是 "marcdef" 或 "marcvaluelist"
-            string marcType = "unimarc";
-            string filename = "";
-
-            if (Z39_Record.rec_status == true && Z39_Record.rec_type != null)
-                marcType = Z39_Record.rec_type;
-            if (Folio_Record.rec_status == true && Folio_Record.rec_type != null)
-                marcType = Folio_Record.rec_type;
-            
+            string filename = "";            
             if (marcType.Equals("unimarc"))
             {
                 filename = "1_2_840_10003_5_1\\marcvaluelist";
@@ -91,38 +374,7 @@ namespace mytest
             dom.Load(filename);
             e.XmlDocument = dom;
         }
-        //功能测试
-        /*
-        private void btn_fetch_record_Click(object sender, EventArgs e)
-        {
-            string jsonText = m2f.fetch_json_from_folio(txt_recordid.Text);
-            m2f.get_data_from_json(jsonText);
-
-            byte[] str_bytes = _encoding.GetBytes(Folio_Record.rawContent);
-
-            int nRet = MarcLoader.ConvertIso2709ToMarcString(str_bytes,
-                _encoding,
-                true,
-                out string strMARC,
-                out string strError);
-            if (nRet == -1)
-            {
-                MessageBox.Show("转换记录失败: " + strError);
-                return;
-            }
-
-            Z39_Record.rec_type = "unimarc";
-            MarcRecord marc_record = new MarcRecord(strMARC);
-            string content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
-            if (content == null)
-            {
-                Z39_Record.rec_type = "usmarc";
-            }
-            marcEditor1.MarcDefDom = null;
-            marcEditor1.Marc = strMARC;
-            Z39_Record.rec_status = false;
-        }
-        */
+        
         //保存数据到服务器
         private void btn_save_record_Click(object sender, EventArgs e)
         {
@@ -201,43 +453,6 @@ namespace mytest
         {
             Copy200gfTo7xxa("g", "702");
         }
-        //禁止直接关闭当前窗口
-        private void EditForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            //this.Hide();
-            e.Cancel = true; //取消关闭操作
-        }
-
-        //窗口激活时刷新编辑器里的数据
-        private void EditForm_Activated(object sender, EventArgs e)
-        {
-            //if (Z39_Record.rec_status == false && Folio_Record.rec_status == false)
-            //    return;
-
-            //marcEditor1.MarcDefDom = null;
-            //if (Z39_Record.rec_status == true)
-            //{
-            //    marcEditor1.Marc = Z39_Record.rec_data;
-            //    Z39_Record.rec_status = false;
-            //}
-            //if(Folio_Record.rec_status == true)
-            //{
-            //    marcEditor1.Marc = Folio_Record.rec_data;
-            //    Folio_Record.rec_status = false;
-            //}
-        }
-
-        private void btn_z39_search_Click(object sender, EventArgs e)
-        {
-            if (Program.SearchForm.Visible == true)
-            {
-                Program.SearchForm.Activate();
-                return;
-            }
-
-            Program.SearchForm.MdiParent = this;
-            Program.SearchForm.Show();
-        }
 
         //获取待编目数据列表
         private void btn_catalog_waiting_Click(object sender, EventArgs e)
@@ -256,7 +471,7 @@ namespace mytest
         }
         private void fetch_data_from_api(string code)
         {
-            string jsonText = m2f.task_fetch(code, 1, MAX_RECORD);
+            string jsonText = m2f.task_fetch(code, 1, MAX_RECORD_FOLIO);
             if(jsonText == "")
             {
                 MessageBox.Show("获取任务数据失败");
@@ -331,25 +546,25 @@ namespace mytest
 
             int rec_id = Convert.ToInt32(listView2.SelectedItems[0].Text) - 1;
 
-            //保存记录ID到全局变量，编目窗口激活时使用
+            //这里的全局变量应该都可以改为内部变量
             Folio_Record.instanceId = _catalog_instanceId[rec_id];
             Folio_Record.id = _catalog_id[rec_id];
-            Folio_Record.jsonText = m2f.fetch_json_from_folio(_catalog_instanceId[rec_id]);
+            jsonText = m2f.fetch_json_from_folio(_catalog_instanceId[rec_id]);
 
             bool bFound = true;
-            if (Folio_Record.jsonText == "")
+            if (jsonText == "")
             {
                 MessageBox.Show("未找到MARC数据");
                 bFound = false;
             }
             else
             {
-                if (Folio_Record.jsonText.IndexOf("Couldn't find Record with INSTANCE id") != -1)
+                if (jsonText.IndexOf("Couldn't find Record with INSTANCE id") != -1)
                 {
                     MessageBox.Show("获取MARC数据失败");
                     bFound = false;
                 }
-                if (Folio_Record.jsonText.IndexOf("code\":200,\"message\":\"SUCCESS\",\"success\":true}") != -1)
+                if (jsonText.IndexOf("code\":200,\"message\":\"SUCCESS\",\"success\":true}") != -1)
                 {
                     MessageBox.Show("未找到MARC数据");
                     bFound = false;
@@ -358,7 +573,7 @@ namespace mytest
 
             if (bFound == true)
             {
-                m2f.get_data_from_json(Folio_Record.jsonText);
+                m2f.get_data_from_json(jsonText);
                 byte[] str_bytes = _encoding.GetBytes(Folio_Record.rawContent);
                 int nRet = MarcLoader.ConvertIso2709ToMarcString(str_bytes,
                     _encoding,
@@ -378,24 +593,24 @@ namespace mytest
 
                 if (bFound == true)
                 {
-                    Folio_Record.rec_type = "unimarc";
+                    marcType = "unimarc";
                     MarcRecord marc_record = new MarcRecord(strMARC);
                     string content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
                     if (content == null)
                     {
-                        Folio_Record.rec_type = "usmarc";
+                        marcType = "usmarc";
                     }
                     Folio_Record.rec_data = strMARC;
                     Folio_Record.rec_status = true;
 
                     marcEditor1.MarcDefDom = null;
                     marcEditor1.Marc = Folio_Record.rec_data;
-                    Folio_Record.rec_status = false;
                 }
             }
 
             //加载图片
-            string jsonText = m2f.image_fetch(_catalog_instanceId[rec_id]);
+            jsonText = "";
+            jsonText = m2f.image_fetch(_catalog_instanceId[rec_id]);
             if (jsonText == "")
             {
                 MessageBox.Show("未找到图片数据");
@@ -423,6 +638,30 @@ namespace mytest
                 html += img_title + "<div class=\"ShaShiDi\"><img src=" + img_url + "></div>";
             }
             webBrowser1.DocumentText = html;
+        }
+
+        private void btn_z39_search_Click(object sender, EventArgs e)
+        {
+            tabControl1.SelectedIndex = 5; ;
+        }
+
+        private void marcEditor1_Click(object sender, EventArgs e)
+        {
+            int i = marcEditor1.FocusedFieldIndex;
+            if (i == _saved_Field_Index)
+                return;
+                       
+            _saved_Field_Index = i;
+            string cur_field_name = marcEditor1.FocusedField.Name;
+            if (cur_field_name.Equals("###"))
+                cur_field_name = "ldr";
+            string url = Folio_Config_Info.Folio_field_info_url + cur_field_name + "_xx_chi.html";
+            webBrowser_field_info.Navigate(url);
+        }
+
+        private void EditForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Environment.Exit(0);
         }
     }
 }

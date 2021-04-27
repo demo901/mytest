@@ -5,32 +5,6 @@ namespace mytest
 {
     static class Program
     {
-        static SearchForm _searchForm = null;
-        static EditForm _editForm = null;
-        //static TaskForm _taskForm = null;
-
-        //public static TaskForm TaskForm
-        //{
-        //    get
-        //    {
-        //        return _taskForm;
-        //    }
-        //}
-        public static EditForm EditForm
-        {
-            get
-            {
-                return _editForm;
-            }
-        }
-        public static SearchForm SearchForm
-        {
-            get
-            {
-                return _searchForm;
-            }
-        }
-
         /// <summary>
         /// 应用程序的主入口点。
         /// </summary>
@@ -43,19 +17,9 @@ namespace mytest
             LoginForm loginForm = new LoginForm();
             if (loginForm.ShowDialog() == DialogResult.OK)
             {
-                _searchForm = new SearchForm();
-                _editForm = new EditForm();
-                //_taskForm = new TaskForm();
-
-                Application.Run(new MainForm());
+                Application.Run(new EditForm());
             }
         }
-    }
-    public class Z39_Record
-    {
-        public static string rec_type;
-        public static bool rec_status;
-        public static string rec_data;
     }
     public class Folio_Config_Info
     {
@@ -69,7 +33,9 @@ namespace mytest
         public static string Folio_data_update_url;
         public static string Folio_task_url;
         public static string Folio_image_url;
+        public static string Folio_field_info_url;
     }
+    //可以不使用这里的全局变量，尚未修改完毕
     public class Folio_Record
     {
         public static string rec_type;
@@ -77,7 +43,6 @@ namespace mytest
         public static string rec_data;
         public static string id;
         public static string instanceId;
-        public static string jsonText;
 
         public static string code;
         public static string message;
