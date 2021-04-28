@@ -38,13 +38,15 @@ namespace mytest
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage_task = new System.Windows.Forms.TabPage();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
-            this.btn_catalog_waiting = new System.Windows.Forms.Button();
-            this.btn_check_waiting = new System.Windows.Forms.Button();
-            this.btn_catalog_ing = new System.Windows.Forms.Button();
-            this.btn_check_failure = new System.Windows.Forms.Button();
-            this.listView2 = new System.Windows.Forms.ListView();
+            this.tabControl2 = new System.Windows.Forms.TabControl();
+            this.tabPage_catalog_waiting = new System.Windows.Forms.TabPage();
+            this.listView_Folio_catalog_waiting = new System.Windows.Forms.ListView();
+            this.tabPage_cataloging = new System.Windows.Forms.TabPage();
+            this.listView_Folio_cataloging = new System.Windows.Forms.ListView();
+            this.tabPage_check_failed = new System.Windows.Forms.TabPage();
+            this.tabPage_check_waiting = new System.Windows.Forms.TabPage();
             this.tabPage_images = new System.Windows.Forms.TabPage();
-            this.webBrowser1 = new System.Windows.Forms.WebBrowser();
+            this.webBrowser_images = new System.Windows.Forms.WebBrowser();
             this.tabPage_fix = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -52,7 +54,7 @@ namespace mytest
             this.webBrowser_field_info = new System.Windows.Forms.WebBrowser();
             this.tabPage_chk_info = new System.Windows.Forms.TabPage();
             this.tabPage_z39 = new System.Windows.Forms.TabPage();
-            this.listView1 = new System.Windows.Forms.ListView();
+            this.listView_Z39_Result = new System.Windows.Forms.ListView();
             this.textBox_password = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.textBox_userName = new System.Windows.Forms.TextBox();
@@ -76,6 +78,7 @@ namespace mytest
             this.btn_z39_search = new System.Windows.Forms.Button();
             this.btn_check = new System.Windows.Forms.Button();
             this.btn_save_and_check = new System.Windows.Forms.Button();
+            this.listView_Folio_failed_review = new System.Windows.Forms.ListView();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -83,9 +86,12 @@ namespace mytest
             this.tabControl1.SuspendLayout();
             this.tabPage_task.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
-            this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
+            this.tabControl2.SuspendLayout();
+            this.tabPage_catalog_waiting.SuspendLayout();
+            this.tabPage_cataloging.SuspendLayout();
+            this.tabPage_check_failed.SuspendLayout();
             this.tabPage_images.SuspendLayout();
             this.tabPage_fix.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -115,6 +121,7 @@ namespace mytest
             this.marcEditor1.IndicatorTextColor = System.Drawing.Color.Green;
             this.marcEditor1.Lang = "zh";
             this.marcEditor1.Location = new System.Drawing.Point(0, 0);
+            this.marcEditor1.Marc = "";
             this.marcEditor1.MarcDefDom = null;
             this.marcEditor1.Name = "marcEditor1";
             this.marcEditor1.NameBackColor = System.Drawing.SystemColors.Window;
@@ -224,80 +231,98 @@ namespace mytest
             this.splitContainer3.Name = "splitContainer3";
             this.splitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
-            // splitContainer3.Panel1
-            // 
-            this.splitContainer3.Panel1.Controls.Add(this.btn_catalog_waiting);
-            this.splitContainer3.Panel1.Controls.Add(this.btn_check_waiting);
-            this.splitContainer3.Panel1.Controls.Add(this.btn_catalog_ing);
-            this.splitContainer3.Panel1.Controls.Add(this.btn_check_failure);
-            // 
             // splitContainer3.Panel2
             // 
-            this.splitContainer3.Panel2.Controls.Add(this.listView2);
+            this.splitContainer3.Panel2.Controls.Add(this.tabControl2);
             this.splitContainer3.Size = new System.Drawing.Size(513, 697);
-            this.splitContainer3.SplitterDistance = 64;
+            this.splitContainer3.SplitterDistance = 25;
             this.splitContainer3.TabIndex = 52;
             // 
-            // btn_catalog_waiting
+            // tabControl2
             // 
-            this.btn_catalog_waiting.Font = new System.Drawing.Font("黑体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_catalog_waiting.Location = new System.Drawing.Point(5, 13);
-            this.btn_catalog_waiting.Name = "btn_catalog_waiting";
-            this.btn_catalog_waiting.Size = new System.Drawing.Size(118, 36);
-            this.btn_catalog_waiting.TabIndex = 0;
-            this.btn_catalog_waiting.Text = "待编目列表";
-            this.btn_catalog_waiting.UseVisualStyleBackColor = true;
-            this.btn_catalog_waiting.Click += new System.EventHandler(this.btn_catalog_waiting_Click);
+            this.tabControl2.Controls.Add(this.tabPage_catalog_waiting);
+            this.tabControl2.Controls.Add(this.tabPage_cataloging);
+            this.tabControl2.Controls.Add(this.tabPage_check_failed);
+            this.tabControl2.Controls.Add(this.tabPage_check_waiting);
+            this.tabControl2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl2.Location = new System.Drawing.Point(0, 0);
+            this.tabControl2.Name = "tabControl2";
+            this.tabControl2.SelectedIndex = 0;
+            this.tabControl2.Size = new System.Drawing.Size(513, 668);
+            this.tabControl2.TabIndex = 52;
+            this.tabControl2.SelectedIndexChanged += new System.EventHandler(this.tabControl2_SelectedIndexChanged);
             // 
-            // btn_check_waiting
+            // tabPage_catalog_waiting
             // 
-            this.btn_check_waiting.Font = new System.Drawing.Font("黑体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_check_waiting.Location = new System.Drawing.Point(375, 13);
-            this.btn_check_waiting.Name = "btn_check_waiting";
-            this.btn_check_waiting.Size = new System.Drawing.Size(118, 36);
-            this.btn_check_waiting.TabIndex = 3;
-            this.btn_check_waiting.Text = "待审核列表";
-            this.btn_check_waiting.UseVisualStyleBackColor = true;
+            this.tabPage_catalog_waiting.Controls.Add(this.listView_Folio_catalog_waiting);
+            this.tabPage_catalog_waiting.Location = new System.Drawing.Point(4, 29);
+            this.tabPage_catalog_waiting.Name = "tabPage_catalog_waiting";
+            this.tabPage_catalog_waiting.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage_catalog_waiting.Size = new System.Drawing.Size(505, 635);
+            this.tabPage_catalog_waiting.TabIndex = 0;
+            this.tabPage_catalog_waiting.Text = "待编目列表";
+            this.tabPage_catalog_waiting.UseVisualStyleBackColor = true;
             // 
-            // btn_catalog_ing
+            // listView_Folio_catalog_waiting
             // 
-            this.btn_catalog_ing.Font = new System.Drawing.Font("黑体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_catalog_ing.Location = new System.Drawing.Point(127, 13);
-            this.btn_catalog_ing.Name = "btn_catalog_ing";
-            this.btn_catalog_ing.Size = new System.Drawing.Size(118, 36);
-            this.btn_catalog_ing.TabIndex = 1;
-            this.btn_catalog_ing.Text = "编目中列表";
-            this.btn_catalog_ing.UseVisualStyleBackColor = true;
-            this.btn_catalog_ing.Click += new System.EventHandler(this.btn_catalog_ing_Click);
+            this.listView_Folio_catalog_waiting.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView_Folio_catalog_waiting.FullRowSelect = true;
+            this.listView_Folio_catalog_waiting.GridLines = true;
+            this.listView_Folio_catalog_waiting.HideSelection = false;
+            this.listView_Folio_catalog_waiting.Location = new System.Drawing.Point(3, 3);
+            this.listView_Folio_catalog_waiting.Name = "listView_Folio_catalog_waiting";
+            this.listView_Folio_catalog_waiting.Size = new System.Drawing.Size(499, 629);
+            this.listView_Folio_catalog_waiting.TabIndex = 51;
+            this.listView_Folio_catalog_waiting.UseCompatibleStateImageBehavior = false;
+            this.listView_Folio_catalog_waiting.View = System.Windows.Forms.View.Details;
+            this.listView_Folio_catalog_waiting.DoubleClick += new System.EventHandler(this.listView_Folio_Result_DoubleClick);
             // 
-            // btn_check_failure
+            // tabPage_cataloging
             // 
-            this.btn_check_failure.Font = new System.Drawing.Font("黑体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_check_failure.Location = new System.Drawing.Point(251, 13);
-            this.btn_check_failure.Name = "btn_check_failure";
-            this.btn_check_failure.Size = new System.Drawing.Size(118, 36);
-            this.btn_check_failure.TabIndex = 2;
-            this.btn_check_failure.Text = "审核未通过";
-            this.btn_check_failure.UseVisualStyleBackColor = true;
-            this.btn_check_failure.Click += new System.EventHandler(this.btn_check_failure_Click);
+            this.tabPage_cataloging.Controls.Add(this.listView_Folio_cataloging);
+            this.tabPage_cataloging.Location = new System.Drawing.Point(4, 29);
+            this.tabPage_cataloging.Name = "tabPage_cataloging";
+            this.tabPage_cataloging.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage_cataloging.Size = new System.Drawing.Size(505, 622);
+            this.tabPage_cataloging.TabIndex = 1;
+            this.tabPage_cataloging.Text = "编目中列表";
+            this.tabPage_cataloging.UseVisualStyleBackColor = true;
             // 
-            // listView2
+            // listView_Folio_cataloging
             // 
-            this.listView2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listView2.FullRowSelect = true;
-            this.listView2.GridLines = true;
-            this.listView2.HideSelection = false;
-            this.listView2.Location = new System.Drawing.Point(0, 0);
-            this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(513, 629);
-            this.listView2.TabIndex = 51;
-            this.listView2.UseCompatibleStateImageBehavior = false;
-            this.listView2.View = System.Windows.Forms.View.Details;
-            this.listView2.DoubleClick += new System.EventHandler(this.listView2_DoubleClick);
+            this.listView_Folio_cataloging.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView_Folio_cataloging.FullRowSelect = true;
+            this.listView_Folio_cataloging.GridLines = true;
+            this.listView_Folio_cataloging.HideSelection = false;
+            this.listView_Folio_cataloging.Location = new System.Drawing.Point(3, 3);
+            this.listView_Folio_cataloging.Name = "listView_Folio_cataloging";
+            this.listView_Folio_cataloging.Size = new System.Drawing.Size(499, 616);
+            this.listView_Folio_cataloging.TabIndex = 52;
+            this.listView_Folio_cataloging.UseCompatibleStateImageBehavior = false;
+            this.listView_Folio_cataloging.View = System.Windows.Forms.View.Details;
+            // 
+            // tabPage_check_failed
+            // 
+            this.tabPage_check_failed.Controls.Add(this.listView_Folio_failed_review);
+            this.tabPage_check_failed.Location = new System.Drawing.Point(4, 29);
+            this.tabPage_check_failed.Name = "tabPage_check_failed";
+            this.tabPage_check_failed.Size = new System.Drawing.Size(505, 635);
+            this.tabPage_check_failed.TabIndex = 2;
+            this.tabPage_check_failed.Text = "审核未通过";
+            this.tabPage_check_failed.UseVisualStyleBackColor = true;
+            // 
+            // tabPage_check_waiting
+            // 
+            this.tabPage_check_waiting.Location = new System.Drawing.Point(4, 29);
+            this.tabPage_check_waiting.Name = "tabPage_check_waiting";
+            this.tabPage_check_waiting.Size = new System.Drawing.Size(505, 622);
+            this.tabPage_check_waiting.TabIndex = 3;
+            this.tabPage_check_waiting.Text = "待审核列表";
+            this.tabPage_check_waiting.UseVisualStyleBackColor = true;
             // 
             // tabPage_images
             // 
-            this.tabPage_images.Controls.Add(this.webBrowser1);
+            this.tabPage_images.Controls.Add(this.webBrowser_images);
             this.tabPage_images.Location = new System.Drawing.Point(4, 22);
             this.tabPage_images.Name = "tabPage_images";
             this.tabPage_images.Padding = new System.Windows.Forms.Padding(3);
@@ -306,14 +331,14 @@ namespace mytest
             this.tabPage_images.Text = "书刊图片";
             this.tabPage_images.UseVisualStyleBackColor = true;
             // 
-            // webBrowser1
+            // webBrowser_images
             // 
-            this.webBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.webBrowser1.Location = new System.Drawing.Point(3, 3);
-            this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
-            this.webBrowser1.Name = "webBrowser1";
-            this.webBrowser1.Size = new System.Drawing.Size(513, 697);
-            this.webBrowser1.TabIndex = 55;
+            this.webBrowser_images.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.webBrowser_images.Location = new System.Drawing.Point(3, 3);
+            this.webBrowser_images.MinimumSize = new System.Drawing.Size(20, 20);
+            this.webBrowser_images.Name = "webBrowser_images";
+            this.webBrowser_images.Size = new System.Drawing.Size(513, 697);
+            this.webBrowser_images.TabIndex = 55;
             // 
             // tabPage_fix
             // 
@@ -376,7 +401,7 @@ namespace mytest
             // 
             // tabPage_z39
             // 
-            this.tabPage_z39.Controls.Add(this.listView1);
+            this.tabPage_z39.Controls.Add(this.listView_Z39_Result);
             this.tabPage_z39.Controls.Add(this.textBox_password);
             this.tabPage_z39.Controls.Add(this.label7);
             this.tabPage_z39.Controls.Add(this.textBox_userName);
@@ -403,20 +428,20 @@ namespace mytest
             this.tabPage_z39.Text = "Z39检索";
             this.tabPage_z39.UseVisualStyleBackColor = true;
             // 
-            // listView1
+            // listView_Z39_Result
             // 
-            this.listView1.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.listView1.FullRowSelect = true;
-            this.listView1.GridLines = true;
-            this.listView1.HideSelection = false;
-            this.listView1.HoverSelection = true;
-            this.listView1.Location = new System.Drawing.Point(39, 264);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(439, 300);
-            this.listView1.TabIndex = 80;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
-            this.listView1.DoubleClick += new System.EventHandler(this.listView1_DoubleClick);
+            this.listView_Z39_Result.Activation = System.Windows.Forms.ItemActivation.OneClick;
+            this.listView_Z39_Result.FullRowSelect = true;
+            this.listView_Z39_Result.GridLines = true;
+            this.listView_Z39_Result.HideSelection = false;
+            this.listView_Z39_Result.HoverSelection = true;
+            this.listView_Z39_Result.Location = new System.Drawing.Point(39, 264);
+            this.listView_Z39_Result.Name = "listView_Z39_Result";
+            this.listView_Z39_Result.Size = new System.Drawing.Size(439, 300);
+            this.listView_Z39_Result.TabIndex = 80;
+            this.listView_Z39_Result.UseCompatibleStateImageBehavior = false;
+            this.listView_Z39_Result.View = System.Windows.Forms.View.Details;
+            this.listView_Z39_Result.DoubleClick += new System.EventHandler(this.listView_Z39_Result_DoubleClick);
             // 
             // textBox_password
             // 
@@ -671,6 +696,19 @@ namespace mytest
             this.btn_save_and_check.Text = "保存并送审";
             this.btn_save_and_check.UseVisualStyleBackColor = true;
             // 
+            // listView_Folio_failed_review
+            // 
+            this.listView_Folio_failed_review.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView_Folio_failed_review.FullRowSelect = true;
+            this.listView_Folio_failed_review.GridLines = true;
+            this.listView_Folio_failed_review.HideSelection = false;
+            this.listView_Folio_failed_review.Location = new System.Drawing.Point(0, 0);
+            this.listView_Folio_failed_review.Name = "listView_Folio_failed_review";
+            this.listView_Folio_failed_review.Size = new System.Drawing.Size(505, 635);
+            this.listView_Folio_failed_review.TabIndex = 52;
+            this.listView_Folio_failed_review.UseCompatibleStateImageBehavior = false;
+            this.listView_Folio_failed_review.View = System.Windows.Forms.View.Details;
+            // 
             // EditForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -688,10 +726,13 @@ namespace mytest
             this.splitContainer1.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.tabPage_task.ResumeLayout(false);
-            this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
+            this.tabControl2.ResumeLayout(false);
+            this.tabPage_catalog_waiting.ResumeLayout(false);
+            this.tabPage_cataloging.ResumeLayout(false);
+            this.tabPage_check_failed.ResumeLayout(false);
             this.tabPage_images.ResumeLayout(false);
             this.tabPage_fix.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
@@ -723,17 +764,13 @@ namespace mytest
         private System.Windows.Forms.TabPage tabPage_info;
         private System.Windows.Forms.Button btn_check;
         private System.Windows.Forms.Button btn_save_and_check;
-        private System.Windows.Forms.ListView listView2;
-        private System.Windows.Forms.Button btn_check_waiting;
-        private System.Windows.Forms.Button btn_check_failure;
-        private System.Windows.Forms.Button btn_catalog_ing;
-        private System.Windows.Forms.Button btn_catalog_waiting;
-        private System.Windows.Forms.WebBrowser webBrowser1;
+        private System.Windows.Forms.ListView listView_Folio_catalog_waiting;
+        private System.Windows.Forms.WebBrowser webBrowser_images;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.TabPage tabPage_chk_info;
         private System.Windows.Forms.TabPage tabPage_z39;
-        private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.ListView listView_Z39_Result;
         private System.Windows.Forms.TextBox textBox_password;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox textBox_userName;
@@ -755,6 +792,13 @@ namespace mytest
         private System.Windows.Forms.ComboBox comboBox_use;
         private System.Windows.Forms.Button btn_z39_search;
         private System.Windows.Forms.WebBrowser webBrowser_field_info;
+        private System.Windows.Forms.TabControl tabControl2;
+        private System.Windows.Forms.TabPage tabPage_catalog_waiting;
+        private System.Windows.Forms.TabPage tabPage_cataloging;
+        private System.Windows.Forms.TabPage tabPage_check_failed;
+        private System.Windows.Forms.TabPage tabPage_check_waiting;
+        private System.Windows.Forms.ListView listView_Folio_cataloging;
+        private System.Windows.Forms.ListView listView_Folio_failed_review;
     }
 }
 

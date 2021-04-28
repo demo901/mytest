@@ -18,25 +18,28 @@ namespace mytest
 {
     public partial class EditForm : Form
     {
-        const int MAX_RECORD_Z39 = 10;//一次最多取10条z39记录
+        const int MAX_RECORD_Z39 = 10;//一次最多取10条Z39记录
+        const int MAX_RECORD_FOLIO = 100;//定义一次获取的最大记录数量
+
         ZClient _zclient = new ZClient();
         IsbnSplitter _isbnSplitter = null;
         UseCollection _useList = new UseCollection();
         TargetInfo _targetInfo = new TargetInfo();
-        long _resultCount = 0;   // 检索命中条数
+        long _resultCount = 0;   // Z39检索命中条数
         int _fetched = 0;   // 已经 Present 获取的条数
-        string[] _z39_record_data = null;
-        string[] _z39_record_type = null;
+        string[] _z39_record_data = new string[MAX_RECORD_Z39];
+        string[] _z39_record_type = new string[MAX_RECORD_Z39];
 
-        const int MAX_RECORD_FOLIO = 20;//定义一次获取的最大记录数量
-        string[] _catalog_id = null;
-        string[] _catalog_instanceId = null;
-        int _saved_Field_Index = 0;
+        string[] _catalog_id = new string[MAX_RECORD_FOLIO];
+        string[] _catalog_instanceId = new string[MAX_RECORD_FOLIO];
+        int _saved_Field_Index = 0;//编辑框里上一次被选中的字段索引值
 
-        marc2folio m2f = null;//提供数据转换功能的类
+        marc2folio m2f = new marc2folio();//提供数据转换功能
         Encoding _encoding = Encoding.GetEncoding("UTF-8");
         string marcType = "unimarc";
         string jsonText = "";
+
+        Folio_Record[] folio_record = new Folio_Record[MAX_RECORD_FOLIO];
 
         public EditForm()
         {
@@ -44,15 +47,16 @@ namespace mytest
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            m2f = new marc2folio();
-            _catalog_id = new string[MAX_RECORD_FOLIO];
-            _catalog_instanceId = new string[MAX_RECORD_FOLIO];
-            _z39_record_data = new string[MAX_RECORD_Z39];
-            _z39_record_type = new string[MAX_RECORD_Z39];
-
             Result result = LoadEnvironment();
             if (result.Value == -1)
                 MessageBox.Show(this, result.ErrorInfo);
+
+            for (int i = 0; i < MAX_RECORD_FOLIO; i++)
+            {
+                folio_record[i] = new Folio_Record();
+                folio_record[i].saved = true;
+                folio_record[i].used = false;
+            }
         }
         Result LoadEnvironment()
         {
@@ -79,7 +83,6 @@ namespace mytest
             return new Result();
         }
         // 创建只包含一个检索词的简单 XML 检索式
-        // 注：这种 XML 检索式不是 Z39.50 函数库必需的。只是用它来方便构造 API 检索式的过程
         public string BuildQueryXml()
         {
             XmlDocument dom = new XmlDocument();
@@ -88,12 +91,9 @@ namespace mytest
                 XmlElement node = dom.CreateElement("line");
                 dom.DocumentElement.AppendChild(node);
 
-                string strLogic = "OR";
-                string strFrom = this.comboBox_use.Text;
-
-                node.SetAttribute("logic", strLogic);
+                node.SetAttribute("logic", "OR");
                 node.SetAttribute("word", this.textBox_queryWord.Text);
-                node.SetAttribute("from", strFrom);
+                node.SetAttribute("from", this.comboBox_use.Text);
             }
 
             return dom.OuterXml;
@@ -102,16 +102,17 @@ namespace mytest
         {
             return (this.radioButton_authenStyleIdpass.Checked ? 1 : 0);
         }
+        //执行Z39检索
         private async void button_search_Click(object sender, EventArgs e)
         {
-            listView1.Clear();
+            listView_Z39_Result.Clear();
 
-            this.listView1.Columns.Add("序号");
-            this.listView1.Columns.Add("ISBN");
-            this.listView1.Columns.Add("出版年");
-            this.listView1.Columns.Add("题名");
-            this.listView1.Columns.Add("作者");
-            this.listView1.Columns.Add("出版社");
+            this.listView_Z39_Result.Columns.Add("序号");
+            this.listView_Z39_Result.Columns.Add("ISBN");
+            this.listView_Z39_Result.Columns.Add("出版年");
+            this.listView_Z39_Result.Columns.Add("题名");
+            this.listView_Z39_Result.Columns.Add("作者");
+            this.listView_Z39_Result.Columns.Add("出版社");
 
             string strError = "";
 
@@ -157,8 +158,6 @@ namespace mytest
 
                 if (true)
                 {
-                    // 创建只包含一个检索词的简单 XML 检索式
-                    // 注：这种 XML 检索式不是 Z39.50 函数库必需的。只是用它来方便构造 API 检索式的过程
                     string strQueryXml = BuildQueryXml();
                     // 将 XML 检索式变化为 API 检索式
                     Result result = ZClient.ConvertQueryString(this._useList, strQueryXml, isbnconvertinfo, out strQueryString);
@@ -213,6 +212,7 @@ namespace mytest
         ERROR1:
             MessageBox.Show(this, strError);
         }
+        //下载Z39记录
         async Task FetchRecords(TargetInfo targetinfo)
         {
             try
@@ -245,13 +245,14 @@ namespace mytest
 
             }
         }
+        //将下载的Z39记录填充到列表里
         void AppendMarcRecords(RecordCollection records, Encoding encoding, int start_index)
         {
             if (records == null)
                 return;
             int i = start_index;
 
-            listView1.BeginUpdate();
+            listView_Z39_Result.BeginUpdate();
             foreach (DigitalPlatform.Z3950.Record record in records)
             {
                 if (string.IsNullOrEmpty(record.m_strDiagSetID) == false)
@@ -304,21 +305,24 @@ namespace mytest
                 lvi.SubItems.Add(content);
                 lvi.SubItems.Add(author);
                 lvi.SubItems.Add(publish);
-                listView1.Items.Add(lvi);
+                listView_Z39_Result.Items.Add(lvi);
 
                 i++;
             }
-            listView1.EndUpdate();
+            listView_Z39_Result.EndUpdate();
         }
-
-        private void listView1_DoubleClick(object sender, EventArgs e)
+        //双击当前Z39记录加载到Marc编辑器
+        private void listView_Z39_Result_DoubleClick(object sender, EventArgs e)
         {
-            int selectCount = listView1.SelectedItems.Count;
+            int selectCount = listView_Z39_Result.SelectedItems.Count;
             if (selectCount == 0)
                 return; //没选中，不做响应
+            if (selectCount > 1)//不允许选中多条
+                return;
 
-            int rec_id = Convert.ToInt32(listView1.SelectedItems[0].Text);
+            int rec_id = Convert.ToInt32(listView_Z39_Result.SelectedItems[0].Text);
 
+            marcType = _z39_record_type[rec_id];
             marcEditor1.MarcDefDom = null;
             marcEditor1.Marc = _z39_record_data[rec_id];
         }
@@ -346,12 +350,13 @@ namespace mytest
                     MessageBox.Show("加载本地记录失败: " + strError);
                     return;
                 }
+                //需要判断记录类型
                 //在这里合并版本馆记录
                 marcEditor1.MarcDefDom = null;
                 marcEditor1.Marc = strMARC;
             }
         }
-
+        //根据Marc记录类型加载不同的字段提示信息
         private void marcEditor1_GetConfigDom(object sender, DigitalPlatform.Marc.GetConfigDomEventArgs e)
         {
             // e.Path 中可能是 "marcdef" 或 "marcvaluelist"
@@ -375,25 +380,29 @@ namespace mytest
             e.XmlDocument = dom;
         }
         
-        //保存数据到服务器
+        //保存所有已更改数据到服务器
         private void btn_save_record_Click(object sender, EventArgs e)
         {
-            byte[] in_bytes = _encoding.GetBytes(marcEditor1.Marc);
-            int nRet = MarcUtil.BuildISO2709Record(in_bytes, out byte[] out_bytes);
-            if(nRet != 0)
+            for (int i = 0; i < MAX_RECORD_FOLIO; i++)
             {
-                MessageBox.Show("转换ISO2709格式失败，未能保存数据到服务器。");
-                return;
+                if (folio_record[i].used == false || folio_record[i].saved == true)
+                    continue;
+
+                byte[] in_bytes = _encoding.GetBytes(folio_record[i].dp2marcStr);
+                int nRet = MarcUtil.BuildISO2709Record(in_bytes, out byte[] out_bytes);
+                if (nRet != 0)
+                {
+                    MessageBox.Show("转换ISO2709格式失败，未能保存数据到服务器。");
+                    return;
+                }
+
+                string marc_str = _encoding.GetString(out_bytes);
+                string json_str = m2f.marc2json_for_folio(folio_record[i].folio_id, folio_record[i].instanceId, marc_str);
+                string result = m2f.update_folio(json_str);
+                
+                //需要检查返回值，判断是否写入成功
+
             }
-
-            string marc_str = _encoding.GetString(out_bytes);
-            string json_str = m2f.marc2json_for_folio(Folio_Record.id, Folio_Record.instanceId, marc_str);
-            string result = m2f.update_folio(json_str);
-
-            if (result.Equals("OK"))
-                MessageBox.Show("更新成功");
-            else
-                MessageBox.Show("保存记录失败：" + result);
         }
         //整理例程
         void Copy200gfTo7xxa(string strFromSubfield, string strToField)
@@ -454,66 +463,98 @@ namespace mytest
             Copy200gfTo7xxa("g", "702");
         }
 
-        //获取待编目数据列表
-        private void btn_catalog_waiting_Click(object sender, EventArgs e)
+        private void tabControl2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            fetch_data_from_api("PENDING_CATALOG");
+            switch (tabControl2.SelectedIndex)
+            {
+                case 0:
+                    if (listView_Folio_catalog_waiting.Items.Count == 0)
+                    {
+                        //获取待编目数据列表
+                        fetch_data_from_folio_api("PENDING_CATALOG", listView_Folio_catalog_waiting);
+                    }
+                    break;
+                case 1:
+                    if (listView_Folio_cataloging.Items.Count == 0)
+                    {
+                        //获取编目中数据列表
+                        fetch_data_from_folio_api("PROCESS_CATALOG", listView_Folio_cataloging);
+                    }
+                    break;
+                case 2:
+                    if (listView_Folio_failed_review.Items.Count == 0)
+                    {
+                        //获取审核未通过的列表
+                        fetch_data_from_folio_api("FAILED_REVIEW", listView_Folio_failed_review);
+                    }
+                    break;
+                case 3:
+                    break;
+                default:
+                    break;
+            }
+
         }
-        //获取编目中数据列表
-        private void btn_catalog_ing_Click(object sender, EventArgs e)
+        private void fetch_data_from_folio_api(string code,ListView lstview)
         {
-            fetch_data_from_api("PROCESS_CATALOG");
-        }
-        //获取审核未通过的列表
-        private void btn_check_failure_Click(object sender, EventArgs e)
-        {
-            fetch_data_from_api("FAILED_REVIEW");
-        }
-        private void fetch_data_from_api(string code)
-        {
-            string jsonText = m2f.task_fetch(code, 1, MAX_RECORD_FOLIO);
-            if(jsonText == "")
+            string jsonTMP = m2f.task_fetch(code, 1, MAX_RECORD_FOLIO);
+            if(jsonTMP == "")
             {
                 MessageBox.Show("获取任务数据失败");
                 return;
             }
 
-            JObject jo = (JObject)JsonConvert.DeserializeObject(jsonText);
+            JObject jo = (JObject)JsonConvert.DeserializeObject(jsonTMP);
 
             string res_code = jo["code"].ToString();
             string res_mess = jo["message"].ToString();
             string res_succ = jo["success"].ToString();
-
             if (!res_code.Equals("200") || !res_mess.Equals("SUCCESS") || !res_succ.Equals("True"))
             {
-                MessageBox.Show("获取数据失败");
+                MessageBox.Show("未获取到数据");
                 return;
             }
+
             var page_Num = jo["data"]["pageNum"];
             var page_Size = jo["data"]["pageSize"];
             var pages = jo["data"]["pages"];
             var total = jo["data"]["total"];
             var content = jo["data"]["content"];
-
-            listView2.Clear();
-            listView2.Columns.Add("序号", 50);
-            listView2.Columns.Add("NAME", 50);
-            listView2.Columns.Add("ISBN", 100);
-            listView2.Columns.Add("CIP", 100);
-            listView2.Columns.Add("endTaskTime", 100);
-            listView2.Columns.Add("出版社", 150);
-            listView2.Columns.Add("题名", 300);
-
             if (content == null)
             {
                 MessageBox.Show("未找到数据");
                 return;
             }
 
-            listView2.BeginUpdate();
+            lstview.Clear();
+            lstview.Columns.Add("序号", 50);
+            lstview.Columns.Add("NAME", 50);
+            lstview.Columns.Add("ISBN", 100);
+            lstview.Columns.Add("CIP", 100);
+            lstview.Columns.Add("endTaskTime", 100);
+            lstview.Columns.Add("出版社", 150);
+            lstview.Columns.Add("题名", 300);
+
+            lstview.BeginUpdate();
             int i = 0;
+            int index_unused_obj = -1;
             foreach (var t in content)
             {
+                //找一个未使用的对象保存数据
+                for(int j = 0; j < MAX_RECORD_FOLIO; j++)
+                {
+                    if (folio_record[j].used == false)
+                    {
+                        index_unused_obj = j;
+                        break;
+                    }
+                }
+                if(index_unused_obj == -1)
+                {
+                    MessageBox.Show("编辑记录数量超过最大值，请关闭部分记录后重试。");
+                    lstview.EndUpdate();
+                    return;
+                }
                 string name = t["name"].ToString();
                 string isbn = t["isbn"].ToString();
                 string cip = t["cip"].ToString();
@@ -521,8 +562,10 @@ namespace mytest
                 string title = t["title"].ToString();
                 string endtime = t["endTaskTime"].ToString();
 
-                _catalog_instanceId[i] = t["instanceId"].ToString();//将instanceId保存到全局变量
-                _catalog_id[i] = t["id"].ToString();//将id保存到全局变量
+                folio_record[index_unused_obj].instanceId = t["instanceId"].ToString();//将instanceId保存到全局变量
+                folio_record[index_unused_obj].folio_id = t["id"].ToString();//将id保存到全局变量
+                folio_record[index_unused_obj].used = true;
+                folio_record[index_unused_obj].id = i;
 
                 ListViewItem lvi = new ListViewItem();
                 lvi.Text = (i + 1).ToString();
@@ -532,83 +575,90 @@ namespace mytest
                 lvi.SubItems.Add(endtime);
                 lvi.SubItems.Add(pub);
                 lvi.SubItems.Add(title);
-                listView2.Items.Add(lvi);
+                lstview.Items.Add(lvi);
                 i++;
             }
-            listView2.EndUpdate();
+            lstview.EndUpdate();
         }
         //双击列表行，加载MARC数据和编目时使用的图片
-        private void listView2_DoubleClick(object sender, EventArgs e)
+        private void listView_Folio_Result_DoubleClick(object sender, EventArgs e)
         {
-            int selectCount = listView2.SelectedItems.Count; //选中的行数目
-            if (selectCount == 0)
-                return; //没选中，不做响应
+            int selectCount = listView_Folio_catalog_waiting.SelectedItems.Count; //选中的行数目
+            if (selectCount != 1)
+                return; //没选中或多选，不做响应
 
-            int rec_id = Convert.ToInt32(listView2.SelectedItems[0].Text) - 1;
+            int rec_id = Convert.ToInt32(listView_Folio_catalog_waiting.SelectedItems[0].Text) - 1;
 
-            //这里的全局变量应该都可以改为内部变量
-            Folio_Record.instanceId = _catalog_instanceId[rec_id];
-            Folio_Record.id = _catalog_id[rec_id];
-            jsonText = m2f.fetch_json_from_folio(_catalog_instanceId[rec_id]);
-
-            bool bFound = true;
+            load_marc_from_folio(rec_id);
+            load_image_from_folio(rec_id);
+        }
+        //加载Folio数据
+        private void load_marc_from_folio(int rec_id)
+        {
+            int index_cur_obj = 0;//当前记录保存的对象索引
+            for (int i = 0; i < MAX_RECORD_FOLIO; i++)
+            {
+                if(folio_record[i].id == rec_id)
+                {
+                    index_cur_obj = i;
+                    break;
+                }
+            }
+            string jsonText = m2f.fetch_json_from_folio(folio_record[index_cur_obj].instanceId);
+            
             if (jsonText == "")
             {
                 MessageBox.Show("未找到MARC数据");
-                bFound = false;
+                return;
             }
-            else
+            if (jsonText.IndexOf("Couldn't find Record with INSTANCE id") != -1)
             {
-                if (jsonText.IndexOf("Couldn't find Record with INSTANCE id") != -1)
-                {
-                    MessageBox.Show("获取MARC数据失败");
-                    bFound = false;
-                }
-                if (jsonText.IndexOf("code\":200,\"message\":\"SUCCESS\",\"success\":true}") != -1)
-                {
-                    MessageBox.Show("未找到MARC数据");
-                    bFound = false;
-                }
+                MessageBox.Show("获取MARC数据失败");
+                return;
             }
-
-            if (bFound == true)
+            if (jsonText.IndexOf("code\":200,\"message\":\"SUCCESS\",\"success\":true}") != -1)
             {
-                m2f.get_data_from_json(jsonText);
-                byte[] str_bytes = _encoding.GetBytes(Folio_Record.rawContent);
-                int nRet = MarcLoader.ConvertIso2709ToMarcString(str_bytes,
-                    _encoding,
-                    true,
-                    out string strMARC,
-                    out string strError);
-                if (nRet == -1)
-                {
-                    MessageBox.Show("转换ISO2709记录到MARC编辑器失败: " + strError);
-                    bFound = false;
-                }
-                if (strMARC == "")
-                {
-                    MessageBox.Show("转换ISO2709记录到MARC编辑器失败: 记录格式错误");
-                    bFound = false;
-                }
-
-                if (bFound == true)
-                {
-                    marcType = "unimarc";
-                    MarcRecord marc_record = new MarcRecord(strMARC);
-                    string content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
-                    if (content == null)
-                    {
-                        marcType = "usmarc";
-                    }
-                    Folio_Record.rec_data = strMARC;
-                    Folio_Record.rec_status = true;
-
-                    marcEditor1.MarcDefDom = null;
-                    marcEditor1.Marc = Folio_Record.rec_data;
-                }
+                MessageBox.Show("未找到MARC数据");
+                return;
             }
 
-            //加载图片
+            m2f.get_data_from_json(jsonText,
+                out folio_record[index_cur_obj].code,
+                out folio_record[index_cur_obj].message,
+                out folio_record[index_cur_obj].success,
+                out folio_record[index_cur_obj].folio_id,
+                out folio_record[index_cur_obj].rawContent,
+                out folio_record[index_cur_obj].marcContent);
+
+            byte[] str_bytes = _encoding.GetBytes(folio_record[index_cur_obj].rawContent);
+            int nRet = MarcLoader.ConvertIso2709ToMarcString(str_bytes,
+                _encoding,
+                true,
+                out string strMARC,
+                out string strError);
+            if (nRet == -1)
+            {
+                MessageBox.Show("转换ISO2709记录到MARC编辑器失败: " + strError);
+                return;
+            }
+            if (strMARC == "")
+            {
+                MessageBox.Show("转换ISO2709记录到MARC编辑器失败: 记录格式错误");
+                return;
+            }
+
+            marcType = "unimarc";
+            MarcRecord marc_record = new MarcRecord(strMARC);
+            string content = marc_record.select("field[@name='200']/subfield[@name='a']").FirstContent;
+            if (content == null)
+                marcType = "usmarc";
+
+            marcEditor1.MarcDefDom = null;
+            marcEditor1.Marc = strMARC;
+        }
+        //加载图片
+        private void load_image_from_folio(int rec_id)
+        {
             jsonText = "";
             jsonText = m2f.image_fetch(_catalog_instanceId[rec_id]);
             if (jsonText == "")
@@ -637,9 +687,8 @@ namespace mytest
                 string img_url = t["imageUrl"].ToString();
                 html += img_title + "<div class=\"ShaShiDi\"><img src=" + img_url + "></div>";
             }
-            webBrowser1.DocumentText = html;
+            webBrowser_images.DocumentText = html;
         }
-
         private void btn_z39_search_Click(object sender, EventArgs e)
         {
             tabControl1.SelectedIndex = 5; ;
@@ -663,5 +712,9 @@ namespace mytest
         {
             Environment.Exit(0);
         }
+
+
     }
+
+
 }

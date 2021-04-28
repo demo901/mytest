@@ -35,19 +35,24 @@ namespace mytest
         public static string Folio_image_url;
         public static string Folio_field_info_url;
     }
-    //可以不使用这里的全局变量，尚未修改完毕
+
     public class Folio_Record
     {
-        public static string rec_type;
-        public static bool rec_status;
-        public static string rec_data;
-        public static string id;
-        public static string instanceId;
+        public bool saved;//记录是否需要保存
+        public bool used;//是否被使用
+        public int id;//ListView中的ID索引，从0开始
 
-        public static string code;
-        public static string message;
-        public static string success;
-        public static string rawContent;
-        public static string marcContent;
+        public string folio_id;
+        public string instanceId;
+        public string dp2marcStr;//机内格式数据
+        public string code;
+        public string message;
+        public string success;
+        public string rawContent;
+        public string marcContent;
+
+        //需要保留来自Folio的字段
+        public string f010a_orig;
+        public string f210a_orig;
     }
 }

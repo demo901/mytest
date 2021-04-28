@@ -27,16 +27,17 @@ namespace mytest
 			req_Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
 		}
 		//解析Json格式的数据
-        public void get_data_from_json(string jsonText)
+        public void get_data_from_json(string jsonText,out string code, out string message, out string success,
+			out string folio_id, out string rawContent, out string marcContent)
 		{
 			JObject jo = (JObject)JsonConvert.DeserializeObject(jsonText);
 
-			Folio_Record.code = jo["code"].ToString();
-			Folio_Record.message = jo["message"].ToString();
-			Folio_Record.success = jo["success"].ToString();
-			Folio_Record.id = jo["data"]["id"].ToString();
-			Folio_Record.rawContent = jo["data"]["rawContent"].ToString();
-			Folio_Record.marcContent = jo["data"]["marcContent"].ToString();
+			code = jo["code"].ToString();
+			message = jo["message"].ToString();
+			success = jo["success"].ToString();
+			folio_id = jo["data"]["id"].ToString();
+			rawContent = jo["data"]["rawContent"].ToString();
+			marcContent = jo["data"]["marcContent"].ToString();
 		}
 		
 		public string fetch_json_from_folio(string recordID)
